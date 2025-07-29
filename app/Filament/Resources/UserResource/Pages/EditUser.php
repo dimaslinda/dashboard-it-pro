@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\WebsiteResource\Pages;
+namespace App\Filament\Resources\UserResource\Pages;
 
-use App\Filament\Resources\WebsiteResource;
+use App\Filament\Resources\UserResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Notifications\Notification;
 
-class EditWebsite extends EditRecord
+class EditUser extends EditRecord
 {
-    protected static string $resource = WebsiteResource::class;
+    protected static string $resource = UserResource::class;
 
     protected function getHeaderActions(): array
     {
@@ -18,8 +18,8 @@ class EditWebsite extends EditRecord
                 ->successNotification(
                     Notification::make()
                         ->success()
-                        ->title('Website Deleted')
-                        ->body('Website has been deleted successfully.')
+                        ->title('User Deleted')
+                        ->body('User has been deleted successfully.')
                         ->icon('heroicon-o-trash')
                         ->iconColor('danger')
                 ),
@@ -30,8 +30,8 @@ class EditWebsite extends EditRecord
     {
         return Notification::make()
             ->success()
-            ->title('Website Updated')
-            ->body('Website has been updated successfully.')
+            ->title('User Updated')
+            ->body('User has been updated successfully.')
             ->icon('heroicon-o-pencil')
             ->iconColor('success');
     }
