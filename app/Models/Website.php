@@ -100,6 +100,44 @@ class Website extends Model
     }
 
     /**
+     * Scope for websites with domain expiring in specific days
+     */
+    public function scopeDomainExpiringIn($query, int $days)
+    {
+        $targetDate = now()->addDays($days);
+        return $query->whereDate('domain_expiry', $targetDate)
+                    ->where('status', '!=', 'expired');
+    }
+
+    /**
+     * Scope for websites with hosting expiring in specific days
+     */
+    public function scopeHostingExpiringIn($query, int $days)
+    {
+        $targetDate = now()->addDays($days);
+        return $query->whereDate('hosting_expiry', $targetDate)
+                    ->where('status', '!=', 'expired');
+    }
+
+    /**
+     * Get days until domain expiry
+     */
+    public function getDaysUntilDomainExpiry(): ?int
+    {
+        if (!$this->domain_expiry) return null;
+        return now()->diffInDays($this->domain_expiry, false);
+    }
+
+    /**
+     * Get days until hosting expiry
+     */
+    public function getDaysUntilHostingExpiry(): ?int
+    {
+        if (!$this->hosting_expiry) return null;
+        return now()->diffInDays($this->hosting_expiry, false);
+    }
+
+    /**
      * Get status badge color
      */
     public function getStatusColorAttribute(): string

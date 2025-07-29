@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'fonnte' => [
+        'token' => env('FONNTE_TOKEN'),
+        'notification_target' => env('FONNTE_NOTIFICATION_TARGET'),
+    ],
+
 ];
