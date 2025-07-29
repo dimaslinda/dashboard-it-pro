@@ -21,6 +21,16 @@ class Kernel extends ConsoleKernel
         $schedule->command('expiry:check --days=0')
                  ->dailyAt('14:00')
                  ->description('Check for domains and hosting expiring today');
+        
+        // Check for expiring WiFi networks every day at 9:30 AM
+        $schedule->command('wifi:expiry-check --days=3')
+                 ->dailyAt('09:30')
+                 ->description('Check for WiFi networks expiring in 3 days');
+        
+        // Additional WiFi check at 2:30 PM for same day expiry
+        $schedule->command('wifi:expiry-check --days=0')
+                 ->dailyAt('14:30')
+                 ->description('Check for WiFi networks expiring today');
     }
 
     /**

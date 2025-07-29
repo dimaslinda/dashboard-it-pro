@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\WifiNetworkResource\Pages;
 use App\Filament\Resources\WifiNetworkResource\RelationManagers;
 use App\Models\WifiNetwork;
+use App\Models\InternetProvider;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -137,6 +138,41 @@ class WifiNetworkResource extends Resource
                     ])
                     ->columns(2),
                 
+                Forms\Components\Section::make('Provider & Billing')
+                    ->schema([
+                        Forms\Components\Select::make('provider_id')
+                            ->label('Internet Provider')
+                            ->relationship('provider', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\TextInput::make('contact_phone')
+                                    ->tel()
+                                    ->maxLength(20),
+                                Forms\Components\TextInput::make('contact_email')
+                                    ->email()
+                                    ->maxLength(255),
+                            ]),
+                        
+                        Forms\Components\DatePicker::make('service_expiry_date')
+                            ->label('Tanggal Berakhir Layanan')
+                            ->native(false),
+                        
+                        Forms\Components\TextInput::make('monthly_cost')
+                            ->label('Biaya Bulanan')
+                            ->numeric()
+                            ->prefix('Rp')
+                            ->step(0.01),
+                        
+                        Forms\Components\DatePicker::make('contract_start_date')
+                            ->label('Tanggal Mulai Kontrak')
+                            ->native(false),
+                    ])
+                    ->columns(2),
+
                 Forms\Components\Section::make('Catatan')
                     ->schema([
                         Forms\Components\Textarea::make('notes')
@@ -195,6 +231,26 @@ class WifiNetworkResource extends Resource
                     ->boolean()
                     ->toggleable(),
                 
+                Tables\Columns\TextColumn::make('provider.name')
+                    ->label('Provider')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
+                
+                Tables\Columns\TextColumn::make('service_expiry_date')
+                    ->label('Berakhir')
+                    ->date()
+                    ->sortable()
+                    ->badge()
+                    ->color(fn ($record) => $record->expiry_color ?? 'gray')
+                    ->toggleable(),
+                
+                Tables\Columns\TextColumn::make('monthly_cost')
+                    ->label('Biaya/Bulan')
+                    ->money('IDR')
+                    ->sortable()
+                    ->toggleable(),
+                
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
@@ -237,6 +293,20 @@ class WifiNetworkResource extends Resource
                 
                 Tables\Filters\TernaryFilter::make('guest_network')
                     ->label('Guest Network'),
+                
+                Tables\Filters\SelectFilter::make('provider')
+                    ->label('Provider')
+                    ->relationship('provider', 'name')
+                    ->searchable()
+                    ->preload(),
+                
+                Tables\Filters\Filter::make('expiring_soon')
+                    ->label('Berakhir Dalam 30 Hari')
+                    ->query(fn (Builder $query): Builder => $query->expiringSoon(30)),
+                
+                Tables\Filters\Filter::make('expired')
+                    ->label('Sudah Berakhir')
+                    ->query(fn (Builder $query): Builder => $query->expired()),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

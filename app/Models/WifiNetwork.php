@@ -28,12 +28,19 @@ class WifiNetwork extends Model
         'guest_password',
         'notes',
         'status',
+        'provider_id',
+        'service_expiry_date',
+        'monthly_cost',
+        'contract_start_date',
     ];
 
     protected $casts = [
         'channel' => 'integer',
         'max_devices' => 'integer',
         'guest_network' => 'boolean',
+        'service_expiry_date' => 'date',
+        'contract_start_date' => 'date',
+        'monthly_cost' => 'decimal:2',
     ];
 
     protected $hidden = [
@@ -110,6 +117,69 @@ class WifiNetwork extends Model
             'WPA' => 'warning',
             'Open' => 'danger',
             default => 'secondary'
+        };
+    }
+
+    /**
+     * Get the internet provider for this WiFi network
+     */
+    public function provider()
+    {
+        return $this->belongsTo(InternetProvider::class, 'provider_id');
+    }
+
+    /**
+     * Scope for networks expiring soon
+     */
+    public function scopeExpiringSoon($query, $days = 30)
+    {
+        return $query->whereNotNull('service_expiry_date')
+                    ->where('service_expiry_date', '<=', now()->addDays($days))
+                    ->where('service_expiry_date', '>=', now());
+    }
+
+    /**
+     * Scope for expired networks
+     */
+    public function scopeExpired($query)
+    {
+        return $query->whereNotNull('service_expiry_date')
+                    ->where('service_expiry_date', '<', now());
+    }
+
+    /**
+     * Get expiry status
+     */
+    public function getExpiryStatusAttribute(): string
+    {
+        if (!$this->service_expiry_date) {
+            return 'no_expiry';
+        }
+
+        $daysUntilExpiry = now()->diffInDays($this->service_expiry_date, false);
+
+        if ($daysUntilExpiry < 0) {
+            return 'expired';
+        } elseif ($daysUntilExpiry <= 7) {
+            return 'critical';
+        } elseif ($daysUntilExpiry <= 30) {
+            return 'warning';
+        }
+
+        return 'safe';
+    }
+
+    /**
+     * Get expiry color
+     */
+    public function getExpiryColorAttribute(): string
+    {
+        return match($this->expiry_status) {
+            'expired' => 'danger',
+            'critical' => 'danger',
+            'warning' => 'warning',
+            'safe' => 'success',
+            default => 'gray'
         };
     }
 
