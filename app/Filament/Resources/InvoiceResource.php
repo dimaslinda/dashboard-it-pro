@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Filament\Support\Colors\Color;
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class InvoiceResource extends Resource
 {
@@ -191,6 +192,17 @@ class InvoiceResource extends Resource
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
+                
+                Forms\Components\Section::make('File Invoice')
+                    ->schema([
+                        Forms\Components\SpatieMediaLibraryFileUpload::make('invoice_file')
+                            ->label('Upload File Invoice')
+                            ->collection('invoices')
+                            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'])
+                            ->maxSize(1024) // 1MB - sesuai dengan PHP upload limit
+                            ->helperText('Maksimal ukuran file: 1MB. Format yang didukung: PDF, JPG, PNG')
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -251,6 +263,13 @@ class InvoiceResource extends Resource
                         'gray' => 'cancelled',
                         'warning' => 'draft',
                     ]),
+                
+                Tables\Columns\TextColumn::make('media_count')
+                    ->label('File Invoice')
+                    ->counts('media')
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(),
             ])
             ->filters([
                 SelectFilter::make('status')

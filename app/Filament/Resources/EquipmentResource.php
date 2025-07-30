@@ -46,6 +46,7 @@ class EquipmentResource extends Resource
                                 'server' => 'Server',
                                 'printer' => 'Printer',
                                 'ups' => 'UPS',
+                                'laptop' => 'Laptop',
                                 'other' => 'Lainnya'
                             ])
                             ->required(),
@@ -248,6 +249,7 @@ class EquipmentResource extends Resource
                         'server' => 'Server',
                         'printer' => 'Printer',
                         'ups' => 'UPS',
+                        'laptop' => 'Laptop',
                         'other' => 'Lainnya'
                     ]),
                 

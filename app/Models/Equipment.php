@@ -129,6 +129,7 @@ class Equipment extends Model
             'server' => 'warning',
             'printer' => 'secondary',
             'ups' => 'dark',
+            'laptop' => 'info',
             default => 'light'
         };
     }

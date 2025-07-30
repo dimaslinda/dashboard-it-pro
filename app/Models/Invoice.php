@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Carbon\Carbon;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Invoice extends Model
+class Invoice extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'invoice_number',
@@ -83,14 +86,23 @@ class Invoice extends Model
         $year = date('Y');
         $month = date('m');
         
-        $lastInvoice = self::whereYear('created_at', $year)
-                          ->whereMonth('created_at', $month)
-                          ->orderBy('id', 'desc')
+        // Cari invoice terakhir berdasarkan pattern nomor invoice
+        $lastInvoice = self::where('invoice_number', 'like', 'INV-' . $year . $month . '-%')
+                          ->orderBy('invoice_number', 'desc')
                           ->first();
         
         $sequence = $lastInvoice ? (int)substr($lastInvoice->invoice_number, -4) + 1 : 1;
         
-        return 'INV-' . $year . $month . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+        // Pastikan nomor invoice unik dengan mengecek duplikasi
+        do {
+            $invoiceNumber = 'INV-' . $year . $month . '-' . str_pad($sequence, 4, '0', STR_PAD_LEFT);
+            $exists = self::where('invoice_number', $invoiceNumber)->exists();
+            if ($exists) {
+                $sequence++;
+            }
+        } while ($exists);
+        
+        return $invoiceNumber;
     }
 
     /**
@@ -185,5 +197,15 @@ class Invoice extends Model
             'cancelled' => 'gray',
             default => 'warning'
         };
+    }
+
+    /**
+     * Register media collections
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('invoices')
+            ->acceptsMimeTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'])
+            ->singleFile();
     }
 }

@@ -105,4 +105,52 @@ class FontteService
 
         return $this->sendMessage($target, $message);
     }
+
+    /**
+     * Send domain payment confirmation notification
+     */
+    public function sendDomainPaymentNotification(string $target, $website, $amount): array
+    {
+        $message = "✅ *KONFIRMASI PEMBAYARAN DOMAIN* ✅\n\n";
+        $message .= "📌 *Website:* {$website->name}\n";
+        $message .= "🌐 *Domain:* {$website->domain}\n";
+        $message .= "💰 *Jumlah Pembayaran:* Rp " . number_format($amount, 0, ',', '.') . "\n";
+        $message .= "📅 *Tanggal Perpanjangan:* {$website->domain_expiry->format('d/m/Y')}\n";
+        $message .= "🏢 *Registrar:* {$website->registrar}\n\n";
+        $message .= "🎉 Domain telah berhasil diperpanjang dan pembayaran telah dicatat!";
+
+        return $this->sendMessage($target, $message);
+    }
+
+    /**
+     * Send hosting payment confirmation notification
+     */
+    public function sendHostingPaymentNotification(string $target, $website, $amount): array
+    {
+        $message = "✅ *KONFIRMASI PEMBAYARAN HOSTING* ✅\n\n";
+        $message .= "📌 *Website:* {$website->name}\n";
+        $message .= "🌐 *URL:* {$website->url}\n";
+        $message .= "💰 *Jumlah Pembayaran:* Rp " . number_format($amount, 0, ',', '.') . "\n";
+        $message .= "📅 *Tanggal Perpanjangan:* {$website->hosting_expiry->format('d/m/Y')}\n";
+        $message .= "🏢 *Provider:* {$website->hosting_provider}\n\n";
+        $message .= "🎉 Hosting telah berhasil diperpanjang dan pembayaran telah dicatat!";
+
+        return $this->sendMessage($target, $message);
+    }
+
+    /**
+     * Send provider contract payment confirmation notification
+     */
+    public function sendProviderContractPaymentNotification(string $target, $contract, $amount): array
+    {
+        $message = "✅ *KONFIRMASI PEMBAYARAN KONTRAK PROVIDER* ✅\n\n";
+        $message .= "🏢 *Provider:* {$contract->provider->name}\n";
+        $message .= "🏢 *Perusahaan:* {$contract->company_name}\n";
+        $message .= "💰 *Jumlah Pembayaran:* Rp " . number_format($amount, 0, ',', '.') . "\n";
+        $message .= "📅 *Tanggal Perpanjangan:* {$contract->service_expiry_date->format('d/m/Y')}\n";
+        $message .= "📶 *Layanan:* Internet/WiFi\n\n";
+        $message .= "🎉 Kontrak provider telah berhasil diperpanjang dan pembayaran telah dicatat!";
+
+        return $this->sendMessage($target, $message);
+    }
 }

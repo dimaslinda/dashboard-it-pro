@@ -2,27 +2,29 @@
 
 namespace App\Filament\Widgets;
 
-use Filament\Widgets\Widget;
-use App\Models\Website;
 use Carbon\Carbon;
+use App\Models\Website;
 use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Widgets\Widget;
+use App\Services\FontteService;
+use Filament\Forms\Contracts\HasForms;
+use Illuminate\Support\Facades\Artisan;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\FileUpload;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
-use App\Services\FontteService;
-use Illuminate\Support\Facades\Artisan;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
 {
     use InteractsWithForms;
     use InteractsWithActions;
-    
+
     protected static string $view = 'filament.widgets.expiry-notification-widget';
-    
+
     protected int | string | array $columnSpan = 'full';
-    
+
     protected static ?int $sort = 1;
 
     public function getViewData(): array
@@ -71,7 +73,7 @@ class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
                 try {
                     Artisan::call('expiry:check', ['--days' => 30]);
                     $output = Artisan::output();
-                    
+
                     if (str_contains($output, 'WhatsApp notification target not configured')) {
                         Notification::make()
                             ->title('Konfigurasi Belum Lengkap')
@@ -111,7 +113,7 @@ class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
                     ->options(function () {
                         $today = now();
                         $in30Days = $today->copy()->addDays(30);
-                        
+
                         return Website::where('domain_expiry', '<=', $in30Days)
                             ->where('status', '!=', 'expired')
                             ->get()
@@ -122,31 +124,78 @@ class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
                     })
                     ->required()
                     ->searchable()
-                    ->placeholder('Pilih domain yang sudah dibayar')
+                    ->placeholder('Pilih domain yang sudah dibayar'),
+
+                \Filament\Forms\Components\TextInput::make('amount')
+                    ->label('Jumlah Pembayaran')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->placeholder('Masukkan jumlah pembayaran domain')
+                    ->required(),
+
+                FileUpload::make('invoice')
+                    ->label('Upload Invoice/Bukti Pembayaran')
+                    ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'])
+                    ->maxSize(1024) // 1MB - sesuai dengan PHP upload limit
+                    ->helperText('Upload bukti pembayaran domain (PDF, JPG, PNG - Max 1MB)')
+                    ->required()
             ])
             ->action(function (array $data) {
                 try {
                     $website = Website::findOrFail($data['website_id']);
-                    
+
+                    // Create invoice record
+                    $amount = $data['amount'] ?? 0;
+                    $invoice = \App\Models\Invoice::create([
+                        'invoice_number' => \App\Models\Invoice::generateInvoiceNumber(),
+                        'client_name' => $website->domain,
+                        'client_email' => '',
+                        'service_type' => 'domain',
+                        'description' => "Perpanjangan domain {$website->domain}",
+                        'amount' => $amount,
+                        'tax_amount' => 0,
+                        'total_amount' => $amount,
+                        'invoice_date' => now(),
+                        'due_date' => now(),
+                        'paid_date' => now(),
+                        'status' => 'paid',
+                        'payment_method' => 'manual',
+                        'reference_type' => 'website',
+                        'reference_id' => $website->id,
+                    ]);
+
+                    // Handle file upload to invoice
+                    if (isset($data['invoice']) && !empty($data['invoice'])) {
+                        $invoice->clearMediaCollection('invoices');
+                        $invoice->addMedia(storage_path('app/public/' . $data['invoice']))
+                            ->toMediaCollection('invoices');
+                    }
+
                     // Get current domain expiry date or today if null
-                    $currentExpiry = $website->domain_expiry ? 
-                        Carbon::parse($website->domain_expiry) : 
+                    $currentExpiry = $website->domain_expiry ?
+                        Carbon::parse($website->domain_expiry) :
                         now();
-                    
+
                     // Add one year to the current expiry date
                     $newExpiryDate = $currentExpiry->addYear();
-                    
+
                     // Update the domain expiry date
                     $website->update([
                         'domain_expiry' => $newExpiryDate
                     ]);
-                    
+
+                    // Send WhatsApp notification
+                    $fontteService = app(FontteService::class);
+                    $target = env('FONTTE_NOTIFICATION_TARGET');
+                    if ($target) {
+                        $fontteService->sendDomainPaymentNotification($target, $website, $amount);
+                    }
+
                     Notification::make()
                         ->title('Pembayaran Domain Berhasil Dicatat!')
                         ->body("Domain {$website->name} telah diperpanjang hingga {$newExpiryDate->format('d M Y')}")
                         ->success()
                         ->send();
-                        
                 } catch (\Exception $e) {
                     Notification::make()
                         ->title('Error')
@@ -173,7 +222,7 @@ class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
                     ->options(function () {
                         $today = now();
                         $in30Days = $today->copy()->addDays(30);
-                        
+
                         return Website::where('hosting_expiry', '<=', $in30Days)
                             ->where('status', '!=', 'expired')
                             ->get()
@@ -184,31 +233,77 @@ class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
                     })
                     ->required()
                     ->searchable()
-                    ->placeholder('Pilih hosting yang sudah dibayar')
+                    ->placeholder('Pilih hosting yang sudah dibayar'),
+
+                \Filament\Forms\Components\TextInput::make('amount')
+                    ->label('Jumlah Pembayaran')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->placeholder('Masukkan jumlah pembayaran hosting')
+                    ->required(),
+
+                \Filament\Forms\Components\FileUpload::make('invoice')
+                    ->label('Upload Invoice/Bukti Pembayaran')
+                    ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'])
+                    ->maxSize(1024) // 1MB - sesuai dengan PHP upload limit
+                    ->helperText('Upload bukti pembayaran hosting (PDF, JPG, PNG - Max 1MB)')
+                    ->required()
             ])
             ->action(function (array $data) {
                 try {
                     $website = Website::findOrFail($data['website_id']);
-                    
+
+                    // Create invoice record
+                    $invoice = \App\Models\Invoice::create([
+                        'invoice_number' => \App\Models\Invoice::generateInvoiceNumber(),
+                        'client_name' => $website->name,
+                        'client_email' => '',
+                        'service_type' => 'hosting',
+                        'description' => "Perpanjangan hosting {$website->name}",
+                        'amount' => $data['amount'] ?? 0,
+                        'tax_amount' => 0,
+                        'total_amount' => $data['amount'] ?? 0,
+                        'invoice_date' => now(),
+                        'due_date' => now(),
+                        'paid_date' => now(),
+                        'status' => 'paid',
+                        'payment_method' => 'manual',
+                        'reference_type' => 'website',
+                        'reference_id' => $website->id,
+                    ]);
+
+                    // Handle file upload to invoice
+                    if (isset($data['invoice']) && !empty($data['invoice'])) {
+                        $invoice->clearMediaCollection('invoices');
+                        $invoice->addMedia(storage_path('app/public/' . $data['invoice']))
+                            ->toMediaCollection('invoices');
+                    }
+
                     // Get current hosting expiry date or today if null
-                    $currentExpiry = $website->hosting_expiry ? 
-                        Carbon::parse($website->hosting_expiry) : 
+                    $currentExpiry = $website->hosting_expiry ?
+                        Carbon::parse($website->hosting_expiry) :
                         now();
-                    
+
                     // Add one year to the current expiry date
                     $newExpiryDate = $currentExpiry->addYear();
-                    
+
                     // Update the hosting expiry date
                     $website->update([
                         'hosting_expiry' => $newExpiryDate
                     ]);
-                    
+
+                    // Send WhatsApp notification
+                    $fontteService = app(FontteService::class);
+                    $target = env('FONTTE_NOTIFICATION_TARGET');
+                    if ($target) {
+                        $fontteService->sendHostingPaymentNotification($target, $website, $data['amount'] ?? 0);
+                    }
+
                     Notification::make()
                         ->title('Pembayaran Hosting Berhasil Dicatat!')
                         ->body("Hosting {$website->name} telah diperpanjang hingga {$newExpiryDate->format('d M Y')}")
                         ->success()
                         ->send();
-                        
                 } catch (\Exception $e) {
                     Notification::make()
                         ->title('Error')

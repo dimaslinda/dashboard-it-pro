@@ -2,19 +2,21 @@
 
 namespace App\Filament\Widgets;
 
+use Carbon\Carbon;
 use App\Models\WifiNetwork;
+use Filament\Actions\Action;
+use Filament\Widgets\Widget;
+use App\Services\FontteService;
 use App\Models\InternetProvider;
 use App\Models\ProviderContract;
-use Carbon\Carbon;
-use Filament\Actions\Action;
-use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Forms\Contracts\HasForms;
+use Illuminate\Support\Facades\Artisan;
+use Filament\Notifications\Notification;
+use Filament\Forms\Components\FileUpload;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
-use App\Services\FontteService;
-use Filament\Widgets\Widget;
-use Illuminate\Support\Facades\Artisan;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 
 class WifiExpiryNotificationWidget extends Widget implements HasForms, HasActions
 {
@@ -90,7 +92,7 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
                     }
 
                     // Send notification via Fontte
-                    $fontte = new FontteService();
+                    $fontte = app(FontteService::class);
                     $message = "🚨 *PERINGATAN EXPIRY KONTRAK INTERNET* 🚨\n\n";
                     $message .= "Kontrak internet yang akan expired dalam 30 hari:\n\n";
 
@@ -162,11 +164,52 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
                     })
                     ->required()
                     ->searchable()
-                    ->placeholder('Pilih kontrak yang sudah dibayar')
+                    ->placeholder('Pilih kontrak yang sudah dibayar'),
+                    
+                \Filament\Forms\Components\TextInput::make('amount')
+                    ->label('Jumlah Pembayaran')
+                    ->numeric()
+                    ->prefix('Rp')
+                    ->placeholder('Masukkan jumlah pembayaran kontrak')
+                    ->required(),
+                    
+                FileUpload::make('invoice')
+                    ->label('Upload Invoice/Bukti Pembayaran')
+                    ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'])
+                    ->maxSize(1024) // 1MB - sesuai dengan PHP upload limit
+                    ->helperText('Upload bukti pembayaran kontrak internet (PDF, JPG, PNG - Max 1MB)')
+                    ->required()
             ])
             ->action(function (array $data) {
                 try {
                     $contract = ProviderContract::with('provider')->findOrFail($data['contract_id']);
+                    
+                    // Create invoice record
+                    $amount = $data['amount'] ?? 0;
+                    $invoice = \App\Models\Invoice::create([
+                        'invoice_number' => \App\Models\Invoice::generateInvoiceNumber(),
+                        'client_name' => $contract->company_name,
+                        'client_email' => '',
+                        'service_type' => 'provider_contract',
+                        'description' => "Pembayaran kontrak {$contract->provider->name} - {$contract->company_name}",
+                        'amount' => $amount,
+                        'tax_amount' => 0,
+                        'total_amount' => $amount,
+                        'invoice_date' => now(),
+                        'due_date' => now(),
+                        'paid_date' => now(),
+                        'status' => 'paid',
+                        'payment_method' => 'manual',
+                        'reference_type' => 'provider_contract',
+                        'reference_id' => $contract->id,
+                    ]);
+                    
+                    // Handle file upload to invoice
+                    if (isset($data['invoice']) && !empty($data['invoice'])) {
+                        $invoice->clearMediaCollection('invoices');
+                        $invoice->addMedia(storage_path('app/public/' . $data['invoice']))
+                            ->toMediaCollection('invoices');
+                    }
                     
                     // Get current expiry date from contract or today if null
                     $currentExpiry = $contract->service_expiry_date ? 
@@ -180,6 +223,13 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
                     $contract->update([
                         'service_expiry_date' => $newExpiryDate
                     ]);
+                    
+                    // Send WhatsApp notification
+                    $fontteService = app(FontteService::class);
+                    $target = env('FONTTE_NOTIFICATION_TARGET');
+                    if ($target) {
+                        $fontteService->sendProviderContractPaymentNotification($target, $contract, $amount);
+                    }
                     
                     Notification::make()
                         ->title('Pembayaran Berhasil Dicatat!')
