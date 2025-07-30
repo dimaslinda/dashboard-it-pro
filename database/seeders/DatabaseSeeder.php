@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             InvoiceSeeder::class,
             RealDataSeeder::class,
             WebsiteExpirySeeder::class,
+            TenantSeeder::class,
             // Note: Excluded update/migration seeders and test seeders:
             // - InternetProviderContractSeeder (contract specific)
             // - InternetProviderUpdateSeeder (update specific)
