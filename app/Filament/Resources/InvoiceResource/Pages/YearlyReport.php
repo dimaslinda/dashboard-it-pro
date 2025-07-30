@@ -20,6 +20,10 @@ use Filament\Infolists\Contracts\HasInfolists;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\InvoicesExport;
+use Filament\Notifications\Notification;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class YearlyReport extends Page implements HasForms, HasInfolists, HasActions
 {
@@ -135,8 +139,44 @@ class YearlyReport extends Page implements HasForms, HasInfolists, HasActions
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('danger')
                 ->action(function () {
-                    // TODO: Implement PDF export
-                    $this->js('alert("PDF export will be implemented soon")');
+                    // Ambil data invoice untuk tahun yang dipilih
+                    $invoices = Invoice::whereYear('invoice_date', $this->selectedYear)
+                        ->where('status', 'paid') // Hanya invoice yang sudah dibayar
+                        ->orderBy('invoice_date', 'desc')
+                        ->get()
+                        ->map(function ($invoice) {
+                            $invoice->service_type_label = $this->getServiceTypeLabel($invoice->service_type);
+                            $invoice->status_label = $this->getStatusLabel($invoice->status);
+                            return $invoice;
+                        });
+                    
+                    // Hitung statistik
+                    $totalInvoices = $invoices->count();
+                    $totalRevenue = $invoices->sum('total_amount');
+                    $paidInvoices = $invoices->where('status', 'paid')->count();
+                    $averageMonthly = $totalRevenue / 12;
+                    
+                    // Generate PDF
+                    $pdf = Pdf::loadView('pdf.yearly-report', [
+                        'year' => $this->selectedYear,
+                        'invoices' => $invoices,
+                        'totalInvoices' => $totalInvoices,
+                        'totalRevenue' => $totalRevenue,
+                        'paidInvoices' => $paidInvoices,
+                        'averageMonthly' => $averageMonthly,
+                    ]);
+                    
+                    $filename = 'laporan-tahunan-' . $this->selectedYear . '-' . now()->format('Y-m-d-H-i-s') . '.pdf';
+                    
+                    Notification::make()
+                        ->title('Export PDF Berhasil')
+                        ->body('Laporan tahunan ' . $this->selectedYear . ' telah berhasil diunduh dalam format PDF.')
+                        ->success()
+                        ->send();
+                    
+                    return response()->streamDownload(function () use ($pdf) {
+                        echo $pdf->stream();
+                    }, $filename);
                 }),
             
             Action::make('export_excel')
@@ -144,8 +184,22 @@ class YearlyReport extends Page implements HasForms, HasInfolists, HasActions
                 ->icon('heroicon-o-table-cells')
                 ->color('success')
                 ->action(function () {
-                    // TODO: Implement Excel export
-                    $this->js('alert("Excel export will be implemented soon")');
+                    // Filter data berdasarkan tahun yang dipilih
+                    $filters = [
+                        'date_from' => Carbon::create($this->selectedYear, 1, 1)->format('Y-m-d'),
+                        'date_to' => Carbon::create($this->selectedYear, 12, 31)->format('Y-m-d'),
+                        'status' => 'paid' // Hanya export invoice yang sudah dibayar
+                    ];
+                    
+                    $filename = 'yearly-report-' . $this->selectedYear . '-' . now()->format('Y-m-d-H-i-s') . '.xlsx';
+                    
+                    Notification::make()
+                        ->title('Export Excel Berhasil')
+                        ->body('Laporan tahunan ' . $this->selectedYear . ' telah berhasil diunduh.')
+                        ->success()
+                        ->send();
+                    
+                    return Excel::download(new InvoicesExport($filters), $filename);
                 }),
         ];
     }
@@ -211,5 +265,36 @@ class YearlyReport extends Page implements HasForms, HasInfolists, HasActions
             ->limit(10)
             ->get()
             ->toArray();
+    }
+    
+    private function getServiceTypeLabel($type)
+    {
+        $types = [
+            'domain' => 'Domain',
+            'hosting' => 'Hosting',
+            'wifi' => 'WiFi/Internet',
+            'equipment' => 'Peralatan',
+            'maintenance' => 'Pemeliharaan',
+            'consultation' => 'Konsultasi',
+            'development' => 'Pengembangan',
+            'support' => 'Dukungan',
+            'electric_token' => 'Token Listrik',
+            'other' => 'Lainnya',
+        ];
+        
+        return $types[$type] ?? $type;
+    }
+    
+    private function getStatusLabel($status)
+    {
+        $statuses = [
+            'draft' => 'Draft',
+            'sent' => 'Terkirim',
+            'paid' => 'Terbayar',
+            'overdue' => 'Terlambat',
+            'cancelled' => 'Dibatalkan',
+        ];
+        
+        return $statuses[$status] ?? $status;
     }
 }

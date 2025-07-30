@@ -19,6 +19,8 @@ use Filament\Support\Colors\Color;
 use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use App\Exports\InvoicesExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InvoiceResource extends Resource
 {
@@ -108,6 +110,7 @@ class InvoiceResource extends Resource
                                 'consultation' => 'Konsultasi IT',
                                 'development' => 'Pengembangan Website',
                                 'support' => 'Dukungan Teknis',
+                                'electric_token' => 'Pengisian Token Listrik',
                                 'other' => 'Layanan Lainnya',
                             ])
                             ->required(),
@@ -295,6 +298,7 @@ class InvoiceResource extends Resource
                         'consultation' => 'Konsultasi',
                         'development' => 'Pengembangan',
                         'support' => 'Dukungan',
+                        'electric_token' => 'Token Listrik',
                         'other' => 'Lainnya',
                     ]),
                 
@@ -379,7 +383,170 @@ class InvoiceResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    
+                    Action::make('export_excel')
+                        ->label('Export ke Excel')
+                        ->icon('heroicon-o-document-arrow-down')
+                        ->color('success')
+                        ->form([
+                            Forms\Components\Section::make('Filter Export')
+                                ->schema([
+                                    Forms\Components\Select::make('status')
+                                        ->label('Status')
+                                        ->options([
+                                            'draft' => 'Draft',
+                                            'sent' => 'Terkirim',
+                                            'paid' => 'Dibayar',
+                                            'overdue' => 'Terlambat',
+                                            'cancelled' => 'Dibatalkan',
+                                        ])
+                                        ->placeholder('Semua Status'),
+                                    
+                                    Forms\Components\Select::make('service_type')
+                                        ->label('Jenis Layanan')
+                                        ->options([
+                                            'domain' => 'Domain',
+                                            'hosting' => 'Hosting',
+                                            'wifi' => 'WiFi/Internet',
+                                            'equipment' => 'Peralatan',
+                                            'maintenance' => 'Pemeliharaan',
+                                            'consultation' => 'Konsultasi',
+                                            'development' => 'Pengembangan',
+                                            'support' => 'Dukungan',
+                                            'electric_token' => 'Token Listrik',
+                                            'other' => 'Lainnya',
+                                        ])
+                                        ->placeholder('Semua Layanan'),
+                                ])
+                                ->columns(2),
+                            
+                            Forms\Components\Section::make('Periode Tanggal')
+                                ->schema([
+                                    Forms\Components\DatePicker::make('date_from')
+                                        ->label('Dari Tanggal')
+                                        ->placeholder('Pilih tanggal mulai'),
+                                    
+                                    Forms\Components\DatePicker::make('date_to')
+                                        ->label('Sampai Tanggal')
+                                        ->placeholder('Pilih tanggal akhir'),
+                                ])
+                                ->columns(2),
+                            
+                            Forms\Components\Section::make('Opsi Export')
+                                ->schema([
+                                    Forms\Components\Checkbox::make('include_charts')
+                                        ->label('Sertakan Grafik')
+                                        ->default(true)
+                                        ->helperText('Menambahkan sheet dengan grafik analisis'),
+                                    
+                                    Forms\Components\Checkbox::make('include_summary')
+                                        ->label('Sertakan Ringkasan')
+                                        ->default(true)
+                                        ->helperText('Menambahkan sheet dengan ringkasan statistik'),
+                                ])
+                                ->columns(2),
+                        ])
+                        ->action(function (array $data) {
+                            $filters = array_filter([
+                                'status' => $data['status'] ?? null,
+                                'service_type' => $data['service_type'] ?? null,
+                                'date_from' => $data['date_from'] ?? null,
+                                'date_to' => $data['date_to'] ?? null,
+                            ]);
+                            
+                            $filename = 'invoice-export-' . now()->format('Y-m-d-H-i-s') . '.xlsx';
+                            
+                            Notification::make()
+                                ->title('Export Excel Dimulai')
+                                ->body('File Excel sedang diproses dan akan diunduh secara otomatis.')
+                                ->success()
+                                ->send();
+                            
+                            return Excel::download(new InvoicesExport($filters), $filename);
+                        }),
                 ]),
+            ])
+            ->headerActions([
+                Action::make('export_excel_header')
+                    ->label('Export Excel')
+                    ->icon('heroicon-o-document-arrow-down')
+                    ->color('success')
+                    ->form([
+                        Forms\Components\Section::make('Filter Export')
+                            ->schema([
+                                Forms\Components\Select::make('status')
+                                    ->label('Status')
+                                    ->options([
+                                        'draft' => 'Draft',
+                                        'sent' => 'Terkirim',
+                                        'paid' => 'Dibayar',
+                                        'overdue' => 'Terlambat',
+                                        'cancelled' => 'Dibatalkan',
+                                    ])
+                                    ->placeholder('Semua Status'),
+                                
+                                Forms\Components\Select::make('service_type')
+                                    ->label('Jenis Layanan')
+                                    ->options([
+                                        'domain' => 'Domain',
+                                        'hosting' => 'Hosting',
+                                        'wifi' => 'WiFi/Internet',
+                                        'equipment' => 'Peralatan',
+                                        'maintenance' => 'Pemeliharaan',
+                                        'consultation' => 'Konsultasi',
+                                        'development' => 'Pengembangan',
+                                        'support' => 'Dukungan',
+                                        'electric_token' => 'Token Listrik',
+                                        'other' => 'Lainnya',
+                                    ])
+                                    ->placeholder('Semua Layanan'),
+                            ])
+                            ->columns(2),
+                        
+                        Forms\Components\Section::make('Periode Tanggal')
+                            ->schema([
+                                Forms\Components\DatePicker::make('date_from')
+                                    ->label('Dari Tanggal')
+                                    ->placeholder('Pilih tanggal mulai'),
+                                
+                                Forms\Components\DatePicker::make('date_to')
+                                    ->label('Sampai Tanggal')
+                                    ->placeholder('Pilih tanggal akhir'),
+                            ])
+                            ->columns(2),
+                        
+                        Forms\Components\Section::make('Opsi Export')
+                            ->schema([
+                                Forms\Components\Checkbox::make('include_charts')
+                                    ->label('Sertakan Grafik')
+                                    ->default(true)
+                                    ->helperText('Menambahkan sheet dengan grafik analisis'),
+                                
+                                Forms\Components\Checkbox::make('include_summary')
+                                    ->label('Sertakan Ringkasan')
+                                    ->default(true)
+                                    ->helperText('Menambahkan sheet dengan ringkasan statistik'),
+                            ])
+                            ->columns(2),
+                    ])
+                    ->action(function (array $data) {
+                        $filters = array_filter([
+                            'status' => $data['status'] ?? null,
+                            'service_type' => $data['service_type'] ?? null,
+                            'date_from' => $data['date_from'] ?? null,
+                            'date_to' => $data['date_to'] ?? null,
+                        ]);
+                        
+                        $filename = 'invoice-export-' . now()->format('Y-m-d-H-i-s') . '.xlsx';
+                        
+                        Notification::make()
+                            ->title('Export Excel Berhasil')
+                            ->body('File Excel telah berhasil diunduh dengan ' . count($filters) . ' filter aktif.')
+                            ->success()
+                            ->send();
+                        
+                        return Excel::download(new InvoicesExport($filters), $filename);
+                    }),
             ])
             ->defaultSort('invoice_date', 'desc');
     }

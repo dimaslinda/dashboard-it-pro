@@ -40,7 +40,8 @@
                                         <div class="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-medium text-red-700 dark:text-red-200 truncate">
-                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} -
+                                                {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-red-600 dark:text-red-300">
                                                 📅 {{ $contract->service_expiry_date?->format('d/m/Y') ?? 'No Date' }}
@@ -95,11 +96,14 @@
                                     <div class="flex items-start gap-2">
                                         <div class="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-xs font-medium text-orange-700 dark:text-orange-200 truncate">
-                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
+                                            <p
+                                                class="text-xs font-medium text-orange-700 dark:text-orange-200 truncate">
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} -
+                                                {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-orange-600 dark:text-orange-300">
-                                                💰 Rp {{ number_format($contract->monthly_cost ?? 0, 0, ',', '.') }}/bulan
+                                                💰 Rp
+                                                {{ number_format($contract->monthly_cost ?? 0, 0, ',', '.') }}/bulan
                                             </p>
                                         </div>
                                     </div>
@@ -144,8 +148,10 @@
                                     <div class="flex items-start gap-2">
                                         <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
-                                            <p class="text-xs font-medium text-yellow-700 dark:text-yellow-200 truncate">
-                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
+                                            <p
+                                                class="text-xs font-medium text-yellow-700 dark:text-yellow-200 truncate">
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} -
+                                                {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-yellow-600 dark:text-yellow-300">
                                                 📅 {{ $contract->service_expiry_date?->format('d/m/Y') ?? 'No Date' }}
@@ -201,7 +207,8 @@
                                         <div class="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-medium text-blue-700 dark:text-blue-200 truncate">
-                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} -
+                                                {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-blue-600 dark:text-blue-300">
                                                 📅 {{ $contract->service_expiry_date?->format('d/m/Y') ?? 'No Date' }}
@@ -235,7 +242,7 @@
         <div class="mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
             <div class="flex flex-wrap gap-4 justify-center sm:justify-start">
                 <a href="{{ route('filament.secret.resources.wifi-networks.index') }}"
-                    class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 action-button"
+                    class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:text-white text-black text-sm font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 action-button"
                     target="_blank">
                     <div class="w-5 h-5 mr-3 bg-white/20 rounded-lg flex items-center justify-center">
                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +257,7 @@
                 <div class="ml-2 test-wifi-notification-wrapper">
                     {{ $this->testWifiNotificationAction }}
                 </div>
-                
+
                 <div class="ml-2 mark-as-paid-wrapper">
                     {{ $this->markAsPaidAction }}
                 </div>
@@ -268,7 +275,7 @@
         }
 
         .dark .wifi-expiry-widget {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: #18181b;
             border-color: #374151;
         }
 
@@ -294,6 +301,7 @@
         }
 
         @keyframes pulse {
+
             0%,
             100% {
                 opacity: 1;

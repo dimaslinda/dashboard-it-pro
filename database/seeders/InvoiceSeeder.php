@@ -199,6 +199,24 @@ class InvoiceSeeder extends Seeder
                 'payment_method' => 'bank_transfer',
                 'payment_notes' => 'Paid via BNI transfer',
             ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '11-0011',
+                'client_name' => 'Warung Makan Sederhana',
+                'client_email' => 'owner@warungsederhana.com',
+                'client_phone' => '021-99887766',
+                'client_address' => 'Jl. Raya Bogor No. 456, Depok',
+                'service_type' => 'electric_token',
+                'description' => 'Pengisian token listrik PLN 100kWh',
+                'amount' => 150000,
+                'tax_amount' => 0,
+                'total_amount' => 150000,
+                'invoice_date' => Carbon::create($currentYear, 11, 5),
+                'due_date' => Carbon::create($currentYear, 11, 12),
+                'paid_date' => Carbon::create($currentYear, 11, 6),
+                'status' => 'paid',
+                'payment_method' => 'cash',
+                'payment_notes' => 'Paid in cash',
+            ],
         ];
         
         // Data contoh untuk tahun lalu

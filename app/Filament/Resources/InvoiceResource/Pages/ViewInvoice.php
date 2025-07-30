@@ -101,6 +101,7 @@ class ViewInvoice extends ViewRecord
                                 'wifi' => 'warning',
                                 'equipment' => 'gray',
                                 'maintenance' => 'purple',
+                                'electric_token' => 'danger',
                                 default => 'primary',
                             })
                             ->formatStateUsing(fn (string $state): string => match ($state) {
@@ -112,6 +113,7 @@ class ViewInvoice extends ViewRecord
                                 'consultation' => 'Konsultasi',
                                 'development' => 'Pengembangan',
                                 'support' => 'Dukungan',
+                                'electric_token' => 'Token Listrik',
                                 'other' => 'Lainnya',
                                 default => $state,
                             }),

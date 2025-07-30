@@ -328,11 +328,11 @@
                 <div class="ml-2 test-notification-wrapper">
                     {{ $this->testNotificationAction }}
                 </div>
-                
+
                 <div class="ml-2 mark-domain-paid-wrapper">
                     {{ $this->markDomainAsPaidAction }}
                 </div>
-                
+
                 <div class="ml-2 mark-hosting-paid-wrapper">
                     {{ $this->markHostingAsPaidAction }}
                 </div>
@@ -351,7 +351,7 @@
         }
 
         .dark .expiry-widget {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            background: #18181b;
             border-color: #374151;
         }
 
