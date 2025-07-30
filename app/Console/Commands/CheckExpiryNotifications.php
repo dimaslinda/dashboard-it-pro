@@ -34,7 +34,7 @@ class CheckExpiryNotifications extends Command
     {
         $days = (int) $this->option('days');
         $targetDate = now()->addDays($days);
-        $whatsappTarget = config('services.fonnte.notification_target');
+        $whatsappTarget = env('FONTTE_NOTIFICATION_TARGET');
 
         if (!$whatsappTarget) {
             $this->error('WhatsApp notification target not configured!');

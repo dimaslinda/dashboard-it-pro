@@ -12,7 +12,7 @@ class FontteService
 
     public function __construct()
     {
-        $this->token = config('services.fonnte.token');
+        $this->token = env('FONTTE_TOKEN');
         $this->baseUrl = 'https://api.fonnte.com';
     }
 
@@ -91,13 +91,16 @@ class FontteService
      */
     public function sendWifiExpiryNotification(string $target, $wifi, int $daysLeft): array
     {
+        $expiryDate = $wifi->provider && $wifi->provider->service_expiry_date ? 
+            $wifi->provider->service_expiry_date->format('d/m/Y') : 'Tidak ada tanggal';
+            
         $message = "🚨 *PERINGATAN WiFi AKAN EXPIRED* 🚨\n\n";
         $message .= "📶 *Nama WiFi:* {$wifi->name}\n";
         $message .= "📍 *Lokasi:* {$wifi->location}\n";
-        $message .= "📅 *Tanggal Expired:* {$wifi->service_expiry_date->format('d/m/Y')}\n";
+        $message .= "📅 *Tanggal Expired:* {$expiryDate}\n";
         $message .= "⏰ *Sisa Waktu:* {$daysLeft} hari\n";
         $message .= "🏢 *Provider:* " . ($wifi->provider ? $wifi->provider->name : 'Tidak ada') . "\n";
-        $message .= "💰 *Biaya Bulanan:* Rp " . number_format($wifi->monthly_cost ?? 0, 0, ',', '.') . "\n\n";
+        $message .= "💰 *Biaya Bulanan:* Rp " . number_format($wifi->provider->monthly_cost ?? 0, 0, ',', '.') . "\n\n";
         $message .= "⚠️ Segera lakukan perpanjangan layanan WiFi untuk menghindari gangguan koneksi internet!";
 
         return $this->sendMessage($target, $message);

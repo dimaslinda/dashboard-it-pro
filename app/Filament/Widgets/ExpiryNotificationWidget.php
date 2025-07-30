@@ -94,4 +94,128 @@ class ExpiryNotificationWidget extends Widget implements HasForms, HasActions
                 }
             });
     }
+
+    public function markDomainAsPaidAction(): Action
+    {
+        return Action::make('markDomainAsPaid')
+            ->label('Domain Sudah Bayar')
+            ->icon('heroicon-o-check-circle')
+            ->color('success')
+            ->requiresConfirmation()
+            ->modalHeading('Konfirmasi Pembayaran Domain')
+            ->modalDescription('Apakah Anda yakin ingin menandai domain ini sebagai sudah dibayar? Tanggal expiry akan diperpanjang ke tahun berikutnya.')
+            ->modalSubmitActionLabel('Ya, Sudah Bayar')
+            ->form([
+                \Filament\Forms\Components\Select::make('website_id')
+                    ->label('Pilih Website/Domain')
+                    ->options(function () {
+                        $today = now();
+                        $in30Days = $today->copy()->addDays(30);
+                        
+                        return Website::where('domain_expiry', '<=', $in30Days)
+                            ->where('status', '!=', 'expired')
+                            ->get()
+                            ->mapWithKeys(function ($website) {
+                                $expiryDate = $website->domain_expiry ? $website->domain_expiry->format('d M Y') : 'No Date';
+                                return [$website->id => "{$website->name} - Domain Expired: {$expiryDate}"];
+                            });
+                    })
+                    ->required()
+                    ->searchable()
+                    ->placeholder('Pilih domain yang sudah dibayar')
+            ])
+            ->action(function (array $data) {
+                try {
+                    $website = Website::findOrFail($data['website_id']);
+                    
+                    // Get current domain expiry date or today if null
+                    $currentExpiry = $website->domain_expiry ? 
+                        Carbon::parse($website->domain_expiry) : 
+                        now();
+                    
+                    // Add one year to the current expiry date
+                    $newExpiryDate = $currentExpiry->addYear();
+                    
+                    // Update the domain expiry date
+                    $website->update([
+                        'domain_expiry' => $newExpiryDate
+                    ]);
+                    
+                    Notification::make()
+                        ->title('Pembayaran Domain Berhasil Dicatat!')
+                        ->body("Domain {$website->name} telah diperpanjang hingga {$newExpiryDate->format('d M Y')}")
+                        ->success()
+                        ->send();
+                        
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title('Error')
+                        ->body('Gagal memperbarui tanggal expiry domain: ' . $e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
+
+    public function markHostingAsPaidAction(): Action
+    {
+        return Action::make('markHostingAsPaid')
+            ->label('Hosting Sudah Bayar')
+            ->icon('heroicon-o-check-circle')
+            ->color('info')
+            ->requiresConfirmation()
+            ->modalHeading('Konfirmasi Pembayaran Hosting')
+            ->modalDescription('Apakah Anda yakin ingin menandai hosting ini sebagai sudah dibayar? Tanggal expiry akan diperpanjang ke tahun berikutnya.')
+            ->modalSubmitActionLabel('Ya, Sudah Bayar')
+            ->form([
+                \Filament\Forms\Components\Select::make('website_id')
+                    ->label('Pilih Website/Hosting')
+                    ->options(function () {
+                        $today = now();
+                        $in30Days = $today->copy()->addDays(30);
+                        
+                        return Website::where('hosting_expiry', '<=', $in30Days)
+                            ->where('status', '!=', 'expired')
+                            ->get()
+                            ->mapWithKeys(function ($website) {
+                                $expiryDate = $website->hosting_expiry ? $website->hosting_expiry->format('d M Y') : 'No Date';
+                                return [$website->id => "{$website->name} - Hosting Expired: {$expiryDate}"];
+                            });
+                    })
+                    ->required()
+                    ->searchable()
+                    ->placeholder('Pilih hosting yang sudah dibayar')
+            ])
+            ->action(function (array $data) {
+                try {
+                    $website = Website::findOrFail($data['website_id']);
+                    
+                    // Get current hosting expiry date or today if null
+                    $currentExpiry = $website->hosting_expiry ? 
+                        Carbon::parse($website->hosting_expiry) : 
+                        now();
+                    
+                    // Add one year to the current expiry date
+                    $newExpiryDate = $currentExpiry->addYear();
+                    
+                    // Update the hosting expiry date
+                    $website->update([
+                        'hosting_expiry' => $newExpiryDate
+                    ]);
+                    
+                    Notification::make()
+                        ->title('Pembayaran Hosting Berhasil Dicatat!')
+                        ->body("Hosting {$website->name} telah diperpanjang hingga {$newExpiryDate->format('d M Y')}")
+                        ->success()
+                        ->send();
+                        
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title('Error')
+                        ->body('Gagal memperbarui tanggal expiry hosting: ' . $e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
 }

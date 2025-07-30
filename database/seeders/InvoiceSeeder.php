@@ -1,0 +1,278 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use App\Models\Invoice;
+use Carbon\Carbon;
+
+class InvoiceSeeder extends Seeder
+{
+    /**
+     * Run the database seeder.
+     */
+    public function run(): void
+    {
+        $currentYear = date('Y');
+        $lastYear = $currentYear - 1;
+        
+        // Data contoh untuk tahun ini
+        $invoicesThisYear = [
+            [
+                'invoice_number' => 'INV-' . $currentYear . '01-0001',
+                'client_name' => 'PT Teknologi Maju',
+                'client_email' => 'admin@teknologimaju.com',
+                'client_phone' => '021-12345678',
+                'client_address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+                'service_type' => 'domain',
+                'description' => 'Domain registration teknologimaju.com for 1 year',
+                'amount' => 150000,
+                'tax_amount' => 15000,
+                'total_amount' => 165000,
+                'invoice_date' => Carbon::create($currentYear, 1, 15),
+                'due_date' => Carbon::create($currentYear, 2, 14),
+                'paid_date' => Carbon::create($currentYear, 1, 20),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid via BCA transfer',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '01-0002',
+                'client_name' => 'CV Digital Kreatif',
+                'client_email' => 'info@digitalkreatif.id',
+                'client_phone' => '021-87654321',
+                'client_address' => 'Jl. Gatot Subroto No. 456, Jakarta Selatan',
+                'service_type' => 'hosting',
+                'description' => 'Web hosting premium package for 1 year',
+                'amount' => 1200000,
+                'tax_amount' => 120000,
+                'total_amount' => 1320000,
+                'invoice_date' => Carbon::create($currentYear, 2, 1),
+                'due_date' => Carbon::create($currentYear, 3, 3),
+                'paid_date' => Carbon::create($currentYear, 2, 15),
+                'status' => 'paid',
+                'payment_method' => 'credit_card',
+                'payment_notes' => 'Paid via credit card',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '03-0003',
+                'client_name' => 'Toko Online Sejahtera',
+                'client_email' => 'owner@tokosejahtera.com',
+                'client_phone' => '021-11223344',
+                'client_address' => 'Jl. Thamrin No. 789, Jakarta Pusat',
+                'service_type' => 'development',
+                'description' => 'E-commerce website development',
+                'amount' => 15000000,
+                'tax_amount' => 1500000,
+                'total_amount' => 16500000,
+                'invoice_date' => Carbon::create($currentYear, 3, 10),
+                'due_date' => Carbon::create($currentYear, 4, 9),
+                'paid_date' => Carbon::create($currentYear, 3, 25),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid in full via bank transfer',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '04-0004',
+                'client_name' => 'Klinik Sehat Bersama',
+                'client_email' => 'admin@kliniksehat.com',
+                'client_phone' => '021-55667788',
+                'client_address' => 'Jl. Kuningan No. 321, Jakarta Selatan',
+                'service_type' => 'maintenance',
+                'description' => 'Monthly website maintenance and support',
+                'amount' => 500000,
+                'tax_amount' => 50000,
+                'total_amount' => 550000,
+                'invoice_date' => Carbon::create($currentYear, 4, 1),
+                'due_date' => Carbon::create($currentYear, 4, 30),
+                'paid_date' => Carbon::create($currentYear, 4, 10),
+                'status' => 'paid',
+                'payment_method' => 'e_wallet',
+                'payment_notes' => 'Paid via OVO',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '05-0005',
+                'client_name' => 'Restoran Nusantara',
+                'client_email' => 'manager@restoranusantara.id',
+                'client_phone' => '021-99887766',
+                'client_address' => 'Jl. Senayan No. 654, Jakarta Pusat',
+                'service_type' => 'wifi',
+                'description' => 'WiFi installation and configuration for restaurant',
+                'amount' => 2500000,
+                'tax_amount' => 250000,
+                'total_amount' => 2750000,
+                'invoice_date' => Carbon::create($currentYear, 5, 15),
+                'due_date' => Carbon::create($currentYear, 6, 14),
+                'paid_date' => Carbon::create($currentYear, 5, 30),
+                'status' => 'paid',
+                'payment_method' => 'cash',
+                'payment_notes' => 'Paid in cash',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '06-0006',
+                'client_name' => 'PT Teknologi Maju',
+                'client_email' => 'admin@teknologimaju.com',
+                'client_phone' => '021-12345678',
+                'client_address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+                'service_type' => 'equipment',
+                'description' => 'Server hardware purchase and installation',
+                'amount' => 25000000,
+                'tax_amount' => 2500000,
+                'total_amount' => 27500000,
+                'invoice_date' => Carbon::create($currentYear, 6, 1),
+                'due_date' => Carbon::create($currentYear, 7, 1),
+                'paid_date' => Carbon::create($currentYear, 6, 20),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid via bank transfer - 2 installments',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '07-0007',
+                'client_name' => 'Sekolah Cerdas Indonesia',
+                'client_email' => 'admin@sekolahcerdas.sch.id',
+                'client_phone' => '021-44556677',
+                'client_address' => 'Jl. Pendidikan No. 111, Jakarta Timur',
+                'service_type' => 'consultation',
+                'description' => 'IT infrastructure consultation and planning',
+                'amount' => 3000000,
+                'tax_amount' => 300000,
+                'total_amount' => 3300000,
+                'invoice_date' => Carbon::create($currentYear, 7, 10),
+                'due_date' => Carbon::create($currentYear, 8, 9),
+                'paid_date' => Carbon::create($currentYear, 7, 25),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid via Mandiri transfer',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '08-0008',
+                'client_name' => 'CV Digital Kreatif',
+                'client_email' => 'info@digitalkreatif.id',
+                'client_phone' => '021-87654321',
+                'client_address' => 'Jl. Gatot Subroto No. 456, Jakarta Selatan',
+                'service_type' => 'support',
+                'description' => 'Technical support and troubleshooting',
+                'amount' => 750000,
+                'tax_amount' => 75000,
+                'total_amount' => 825000,
+                'invoice_date' => Carbon::create($currentYear, 8, 5),
+                'due_date' => Carbon::create($currentYear, 9, 4),
+                'paid_date' => Carbon::create($currentYear, 8, 15),
+                'status' => 'paid',
+                'payment_method' => 'debit_card',
+                'payment_notes' => 'Paid via debit card',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '09-0009',
+                'client_name' => 'Startup Inovasi Digital',
+                'client_email' => 'founder@startupinovasi.com',
+                'client_phone' => '021-33445566',
+                'client_address' => 'Jl. Startup No. 999, Jakarta Barat',
+                'service_type' => 'hosting',
+                'description' => 'Cloud hosting and domain for startup',
+                'amount' => 1800000,
+                'tax_amount' => 180000,
+                'total_amount' => 1980000,
+                'invoice_date' => Carbon::create($currentYear, 9, 1),
+                'due_date' => Carbon::create($currentYear, 10, 1),
+                'paid_date' => Carbon::create($currentYear, 9, 10),
+                'status' => 'paid',
+                'payment_method' => 'e_wallet',
+                'payment_notes' => 'Paid via GoPay',
+            ],
+            [
+                'invoice_number' => 'INV-' . $currentYear . '10-0010',
+                'client_name' => 'Klinik Sehat Bersama',
+                'client_email' => 'admin@kliniksehat.com',
+                'client_phone' => '021-55667788',
+                'client_address' => 'Jl. Kuningan No. 321, Jakarta Selatan',
+                'service_type' => 'maintenance',
+                'description' => 'Quarterly system maintenance and updates',
+                'amount' => 1500000,
+                'tax_amount' => 150000,
+                'total_amount' => 1650000,
+                'invoice_date' => Carbon::create($currentYear, 10, 1),
+                'due_date' => Carbon::create($currentYear, 10, 31),
+                'paid_date' => Carbon::create($currentYear, 10, 15),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid via BNI transfer',
+            ],
+        ];
+        
+        // Data contoh untuk tahun lalu
+        $invoicesLastYear = [
+            [
+                'invoice_number' => 'INV-' . $lastYear . '01-0001',
+                'client_name' => 'PT Teknologi Maju',
+                'client_email' => 'admin@teknologimaju.com',
+                'client_phone' => '021-12345678',
+                'client_address' => 'Jl. Sudirman No. 123, Jakarta Pusat',
+                'service_type' => 'domain',
+                'description' => 'Domain renewal teknologimaju.com',
+                'amount' => 140000,
+                'tax_amount' => 14000,
+                'total_amount' => 154000,
+                'invoice_date' => Carbon::create($lastYear, 1, 15),
+                'due_date' => Carbon::create($lastYear, 2, 14),
+                'paid_date' => Carbon::create($lastYear, 1, 25),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid via BCA transfer',
+            ],
+            [
+                'invoice_number' => 'INV-' . $lastYear . '06-0002',
+                'client_name' => 'CV Digital Kreatif',
+                'client_email' => 'info@digitalkreatif.id',
+                'client_phone' => '021-87654321',
+                'client_address' => 'Jl. Gatot Subroto No. 456, Jakarta Selatan',
+                'service_type' => 'hosting',
+                'description' => 'Web hosting renewal',
+                'amount' => 1100000,
+                'tax_amount' => 110000,
+                'total_amount' => 1210000,
+                'invoice_date' => Carbon::create($lastYear, 6, 1),
+                'due_date' => Carbon::create($lastYear, 7, 1),
+                'paid_date' => Carbon::create($lastYear, 6, 10),
+                'status' => 'paid',
+                'payment_method' => 'credit_card',
+                'payment_notes' => 'Paid via credit card',
+            ],
+            [
+                'invoice_number' => 'INV-' . $lastYear . '12-0003',
+                'client_name' => 'Restoran Nusantara',
+                'client_email' => 'manager@restoranusantara.id',
+                'client_phone' => '021-99887766',
+                'client_address' => 'Jl. Senayan No. 654, Jakarta Pusat',
+                'service_type' => 'equipment',
+                'description' => 'POS system installation',
+                'amount' => 8000000,
+                'tax_amount' => 800000,
+                'total_amount' => 8800000,
+                'invoice_date' => Carbon::create($lastYear, 12, 1),
+                'due_date' => Carbon::create($lastYear, 12, 31),
+                'paid_date' => Carbon::create($lastYear, 12, 15),
+                'status' => 'paid',
+                'payment_method' => 'bank_transfer',
+                'payment_notes' => 'Paid via bank transfer',
+            ],
+        ];
+        
+        // Insert data tahun ini
+        foreach ($invoicesThisYear as $invoice) {
+            Invoice::create($invoice);
+        }
+        
+        // Insert data tahun lalu
+        foreach ($invoicesLastYear as $invoice) {
+            Invoice::create($invoice);
+        }
+        
+        $this->command->info('Invoice test data seeded successfully!');
+        $this->command->info('Created ' . count($invoicesThisYear) . ' invoices for ' . $currentYear);
+        $this->command->info('Created ' . count($invoicesLastYear) . ' invoices for ' . $lastYear);
+        $this->command->info('Total revenue ' . $currentYear . ': Rp ' . number_format(collect($invoicesThisYear)->sum('total_amount'), 0, ',', '.'));
+        $this->command->info('Total revenue ' . $lastYear . ': Rp ' . number_format(collect($invoicesLastYear)->sum('total_amount'), 0, ',', '.'));
+    }
+}

@@ -34,7 +34,7 @@ class CheckWifiExpiryNotifications extends Command
     {
         $days = (int) $this->option('days');
         $targetDate = now()->addDays($days);
-        $whatsappTarget = config('services.fontte.notification_target');
+        $whatsappTarget = env('FONTTE_NOTIFICATION_TARGET');
 
         if (!$whatsappTarget) {
             $this->error('WhatsApp notification target not configured!');
@@ -44,14 +44,19 @@ class CheckWifiExpiryNotifications extends Command
         $this->info("Checking for WiFi networks expiring in {$days} days...");
 
         // Check WiFi expiry
-        $expiringWifi = WifiNetwork::where('service_expiry_date', '<=', $targetDate)
-            ->where('service_expiry_date', '>=', now())
+        $expiringWifi = WifiNetwork::whereHas('provider', function($query) use ($targetDate) {
+                $query->where('service_expiry_date', '<=', $targetDate)
+                      ->where('service_expiry_date', '>=', now());
+            })
             ->where('status', 'active')
             ->with('provider')
             ->get();
 
         foreach ($expiringWifi as $wifi) {
-            $daysLeft = now()->diffInDays($wifi->service_expiry_date, false);
+            $expiryDate = $wifi->provider->service_expiry_date ?? null;
+            if (!$expiryDate) continue;
+            
+            $daysLeft = now()->diffInDays($expiryDate, false);
             
             $this->info("Sending WiFi expiry notification for: {$wifi->name}");
             

@@ -20,11 +20,13 @@ class WifiNetworkResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-wifi';
 
-    protected static ?string $navigationLabel = 'WiFi Networks';
+    protected static ?string $navigationLabel = 'Jaringan WiFi';
 
-    protected static ?string $modelLabel = 'WiFi Network';
+    protected static ?string $modelLabel = 'Jaringan WiFi';
 
-    protected static ?string $pluralModelLabel = 'WiFi Networks';
+    protected static ?string $pluralModelLabel = 'Jaringan WiFi';
+
+    protected static ?string $navigationGroup = 'Manajemen Jaringan';
 
     public static function form(Form $form): Form
     {
@@ -36,25 +38,25 @@ class WifiNetworkResource extends Resource
                             ->label('SSID')
                             ->required()
                             ->maxLength(255),
-                        
+
                         Forms\Components\TextInput::make('password')
-                            ->label('Password')
+                            ->label('Kata Sandi')
                             ->password()
                             ->revealable()
                             ->required()
                             ->maxLength(255),
-                        
+
                         Forms\Components\Select::make('security_type')
                             ->label('Tipe Keamanan')
                             ->options([
                                 'WPA2' => 'WPA2',
                                 'WPA3' => 'WPA3',
                                 'WEP' => 'WEP',
-                                'Open' => 'Open'
+                                'Open' => 'Terbuka'
                             ])
                             ->default('WPA2')
                             ->required(),
-                        
+
                         Forms\Components\Select::make('frequency_band')
                             ->label('Frekuensi Band')
                             ->options([
@@ -64,112 +66,103 @@ class WifiNetworkResource extends Resource
                             ])
                             ->default('2.4GHz')
                             ->required(),
-                        
+
                         Forms\Components\TextInput::make('channel')
                             ->label('Channel')
                             ->numeric()
                             ->minValue(1)
                             ->maxValue(14),
-                        
+
                         Forms\Components\Select::make('status')
                             ->label('Status')
                             ->options([
-                                'active' => 'Active',
-                                'inactive' => 'Inactive',
-                                'maintenance' => 'Maintenance'
+                                'active' => 'Aktif',
+                                'inactive' => 'Tidak Aktif',
+                                'maintenance' => 'Pemeliharaan'
                             ])
                             ->default('active')
                             ->required(),
                     ])
                     ->columns(2),
-                
+
                 Forms\Components\Section::make('Lokasi & Router')
                     ->schema([
                         Forms\Components\TextInput::make('location')
                             ->label('Lokasi')
                             ->maxLength(255),
-                        
+
                         Forms\Components\TextInput::make('router_brand')
                             ->label('Merk Router')
                             ->maxLength(255),
-                        
+
                         Forms\Components\TextInput::make('router_model')
                             ->label('Model Router')
                             ->maxLength(255),
-                        
+
                         Forms\Components\TextInput::make('router_ip')
                             ->label('IP Router')
                             ->maxLength(45),
-                        
+
                         Forms\Components\TextInput::make('router_admin_username')
-                            ->label('Username Admin Router')
+                            ->label('Nama Pengguna Admin Router')
                             ->maxLength(255),
-                        
+
                         Forms\Components\TextInput::make('router_admin_password')
-                            ->label('Password Admin Router')
+                            ->label('Kata Sandi Admin Router')
                             ->password()
                             ->revealable()
                             ->maxLength(255),
                     ])
                     ->columns(2),
-                
+
                 Forms\Components\Section::make('Konfigurasi Lanjutan')
                     ->schema([
                         Forms\Components\TextInput::make('max_devices')
                             ->label('Maksimal Device')
                             ->numeric()
                             ->minValue(1),
-                        
+
                         Forms\Components\Toggle::make('guest_network')
-                            ->label('Guest Network')
+                            ->label('Jaringan Tamu')
                             ->default(false),
-                        
+
                         Forms\Components\TextInput::make('guest_ssid')
-                            ->label('Guest SSID')
+                            ->label('SSID Tamu')
                             ->maxLength(255)
-                            ->visible(fn (Forms\Get $get) => $get('guest_network')),
-                        
+                            ->visible(fn(Forms\Get $get) => $get('guest_network')),
+
                         Forms\Components\TextInput::make('guest_password')
-                            ->label('Guest Password')
+                            ->label('Kata Sandi Tamu')
                             ->password()
                             ->revealable()
                             ->maxLength(255)
-                            ->visible(fn (Forms\Get $get) => $get('guest_network')),
+                            ->visible(fn(Forms\Get $get) => $get('guest_network')),
                     ])
                     ->columns(2),
-                
-                Forms\Components\Section::make('Provider & Billing')
+
+                Forms\Components\Section::make('Provider & Tagihan')
                     ->schema([
                         Forms\Components\Select::make('provider_id')
-                            ->label('Internet Provider')
+                            ->label('Penyedia Internet')
                             ->relationship('provider', 'name')
                             ->searchable()
                             ->preload()
                             ->createOptionForm([
                                 Forms\Components\TextInput::make('name')
+                                    ->label('Nama')
                                     ->required()
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('contact_phone')
+                                    ->label('Telepon Kontak')
                                     ->tel()
                                     ->maxLength(20),
                                 Forms\Components\TextInput::make('contact_email')
+                                    ->label('Email Kontak')
                                     ->email()
                                     ->maxLength(255),
                             ]),
-                        
-                        Forms\Components\DatePicker::make('service_expiry_date')
-                            ->label('Tanggal Berakhir Layanan')
-                            ->native(false),
-                        
-                        Forms\Components\TextInput::make('monthly_cost')
-                            ->label('Biaya Bulanan')
-                            ->numeric()
-                            ->prefix('Rp')
-                            ->step(0.01),
-                        
-                        Forms\Components\DatePicker::make('contract_start_date')
-                            ->label('Tanggal Mulai Kontrak')
-                            ->native(false),
+
+
                     ])
                     ->columns(2),
 
@@ -191,66 +184,65 @@ class WifiNetworkResource extends Resource
                     ->label('SSID')
                     ->searchable()
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('security_type')
                     ->label('Keamanan')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'WPA3' => 'success',
                         'WPA2' => 'info',
                         'WEP' => 'warning',
                         'Open' => 'danger',
                         default => 'gray',
                     }),
-                
+
                 Tables\Columns\TextColumn::make('frequency_band')
                     ->label('Band')
                     ->badge(),
-                
+
                 Tables\Columns\TextColumn::make('channel')
                     ->label('Channel')
                     ->sortable(),
-                
+
                 Tables\Columns\TextColumn::make('location')
                     ->label('Lokasi')
                     ->searchable()
                     ->toggleable(),
-                
+
                 Tables\Columns\TextColumn::make('router_brand')
                     ->label('Router')
-                    ->formatStateUsing(fn ($record) => $record->router_brand . ' ' . $record->router_model)
+                    ->formatStateUsing(fn($record) => $record->router_brand . ' ' . $record->router_model)
                     ->searchable(['router_brand', 'router_model'])
                     ->toggleable(),
-                
+
                 Tables\Columns\TextColumn::make('router_ip')
                     ->label('IP Router')
                     ->toggleable(),
-                
+
                 Tables\Columns\IconColumn::make('guest_network')
-                    ->label('Guest')
+                    ->label('Tamu')
                     ->boolean()
                     ->toggleable(),
-                
+
                 Tables\Columns\TextColumn::make('provider.name')
                     ->label('Provider')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
-                
-                Tables\Columns\TextColumn::make('service_expiry_date')
-                    ->label('Berakhir')
-                    ->date()
+
+                Tables\Columns\TextColumn::make('provider.service_expiry_date')
+                    ->label('Berakhir Layanan')
+                    ->date('d/m/Y')
                     ->sortable()
-                    ->badge()
-                    ->color(fn ($record) => $record->expiry_color ?? 'gray')
+                    ->color(fn($record) => $record->provider && $record->provider->isExpired() ? 'danger' : ($record->provider && $record->provider->isExpiringSoon() ? 'warning' : 'success'))
                     ->toggleable(),
-                
-                Tables\Columns\TextColumn::make('monthly_cost')
-                    ->label('Biaya/Bulan')
+
+                Tables\Columns\TextColumn::make('provider.monthly_cost')
+                    ->label('Biaya Provider/Bulan')
                     ->money('IDR')
                     ->sortable()
                     ->toggleable(),
-                
+
                 Tables\Columns\BadgeColumn::make('status')
                     ->label('Status')
                     ->colors([
@@ -258,7 +250,7 @@ class WifiNetworkResource extends Resource
                         'warning' => 'maintenance',
                         'danger' => 'inactive',
                     ]),
-                
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Dibuat')
                     ->dateTime()
@@ -269,20 +261,20 @@ class WifiNetworkResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->label('Status')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
-                        'maintenance' => 'Maintenance'
+                        'active' => 'Aktif',
+                        'inactive' => 'Tidak Aktif',
+                        'maintenance' => 'Pemeliharaan'
                     ]),
-                
+
                 Tables\Filters\SelectFilter::make('security_type')
                     ->label('Tipe Keamanan')
                     ->options([
                         'WPA2' => 'WPA2',
                         'WPA3' => 'WPA3',
                         'WEP' => 'WEP',
-                        'Open' => 'Open'
+                        'Open' => 'Terbuka'
                     ]),
-                
+
                 Tables\Filters\SelectFilter::make('frequency_band')
                     ->label('Frekuensi Band')
                     ->options([
@@ -290,23 +282,23 @@ class WifiNetworkResource extends Resource
                         '5GHz' => '5 GHz',
                         'Dual' => 'Dual Band'
                     ]),
-                
+
                 Tables\Filters\TernaryFilter::make('guest_network')
-                    ->label('Guest Network'),
-                
+                    ->label('Jaringan Tamu'),
+
                 Tables\Filters\SelectFilter::make('provider')
                     ->label('Provider')
                     ->relationship('provider', 'name')
                     ->searchable()
                     ->preload(),
-                
+
                 Tables\Filters\Filter::make('expiring_soon')
                     ->label('Berakhir Dalam 30 Hari')
-                    ->query(fn (Builder $query): Builder => $query->expiringSoon(30)),
-                
+                    ->query(fn(Builder $query): Builder => $query->expiringSoon(30)),
+
                 Tables\Filters\Filter::make('expired')
                     ->label('Sudah Berakhir')
-                    ->query(fn (Builder $query): Builder => $query->expired()),
+                    ->query(fn(Builder $query): Builder => $query->expired()),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

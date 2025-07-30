@@ -21,7 +21,7 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
     
-    protected static ?string $navigationGroup = 'User Management';
+    protected static ?string $navigationGroup = 'Manajemen Pengguna';
     
     protected static ?int $navigationSort = 1;
 
@@ -29,19 +29,22 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('User Information')
+                Forms\Components\Section::make('Informasi Pengguna')
                     ->schema([
                         Forms\Components\TextInput::make('name')
+                            ->label('Nama')
                             ->required()
                             ->maxLength(255)
                             ->columnSpan(1),
                         Forms\Components\TextInput::make('email')
+                            ->label('Email')
                             ->email()
                             ->required()
                             ->unique(User::class, 'email', ignoreRecord: true)
                             ->maxLength(255)
                             ->columnSpan(1),
                         Forms\Components\TextInput::make('password')
+                            ->label('Password')
                             ->password()
                             ->required(fn (string $context): bool => $context === 'create')
                             ->dehydrated(fn ($state) => filled($state))
@@ -51,21 +54,22 @@ class UserResource extends Resource
                     ])
                     ->columns(2),
                     
-                Forms\Components\Section::make('Roles & Permissions')
+                Forms\Components\Section::make('Peran & Izin')
                     ->schema([
                         Forms\Components\Select::make('roles')
+                            ->label('Peran')
                             ->relationship('roles', 'name')
                             ->multiple()
                             ->preload()
                             ->searchable()
-                            ->placeholder('Select roles')
+                            ->placeholder('Pilih peran')
                             ->columnSpanFull(),
                     ]),
                     
-                Forms\Components\Section::make('Account Status')
+                Forms\Components\Section::make('Status Akun')
                     ->schema([
                         Forms\Components\Toggle::make('is_active')
-                            ->label('Active')
+                            ->label('Aktif')
                             ->default(true)
                             ->columnSpanFull(),
                     ]),
@@ -77,38 +81,44 @@ class UserResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
                     ->sortable()
                     ->copyable(),
                 Tables\Columns\TextColumn::make('roles.name')
+                    ->label('Peran')
                     ->badge()
                     ->separator(',')
                     ->color('success')
                     ->searchable(),
 
                 Tables\Columns\ToggleColumn::make('is_active')
-                    ->label('Active')
+                    ->label('Aktif')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('roles')
+                    ->label('Peran')
                     ->relationship('roles', 'name')
                     ->multiple()
                     ->preload(),
 
                 Tables\Filters\TernaryFilter::make('is_active')
-                    ->label('Active Status'),
+                    ->label('Status Aktif'),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

@@ -2,8 +2,9 @@
 
 namespace App\Filament\Widgets;
 
-use Filament\Widgets\Widget;
 use App\Models\WifiNetwork;
+use App\Models\InternetProvider;
+use App\Models\ProviderContract;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
@@ -12,17 +13,18 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use App\Services\FontteService;
+use Filament\Widgets\Widget;
 use Illuminate\Support\Facades\Artisan;
 
 class WifiExpiryNotificationWidget extends Widget implements HasForms, HasActions
 {
     use InteractsWithForms;
     use InteractsWithActions;
-    
+
     protected static string $view = 'filament.widgets.wifi-expiry-notification-widget';
-    
+
     protected int | string | array $columnSpan = 'full';
-    
+
     protected static ?int $sort = 2;
 
     public function getViewData(): array
@@ -32,20 +34,28 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
         $in30Days = $today->copy()->addDays(30);
 
         return [
-            'expiringToday' => WifiNetwork::whereDate('service_expiry_date', $today)
-                ->where('status', 'active')
+            'expiringToday' => ProviderContract::whereHas('wifiNetworks', function($query) {
+                    $query->where('status', 'active');
+                })
+                ->whereDate('service_expiry_date', $today)
                 ->with('provider')
                 ->get(),
-            'expiringIn7Days' => WifiNetwork::whereBetween('service_expiry_date', [$today->copy()->addDay(), $in7Days])
-                ->where('status', 'active')
+            'expiringIn7Days' => ProviderContract::whereHas('wifiNetworks', function($query) {
+                    $query->where('status', 'active');
+                })
+                ->whereBetween('service_expiry_date', [$today->copy()->addDay(), $in7Days])
                 ->with('provider')
                 ->get(),
-            'expiringIn30Days' => WifiNetwork::whereBetween('service_expiry_date', [$today->copy()->addDay(), $in30Days])
-                ->where('status', 'active')
+            'expiringIn30Days' => ProviderContract::whereHas('wifiNetworks', function($query) {
+                    $query->where('status', 'active');
+                })
+                ->whereBetween('service_expiry_date', [$today->copy()->addDay(), $in30Days])
                 ->with('provider')
                 ->get(),
-            'expired' => WifiNetwork::where('service_expiry_date', '<', $today)
-                ->where('status', 'active')
+            'expired' => ProviderContract::whereHas('wifiNetworks', function($query) {
+                    $query->where('status', 'active');
+                })
+                ->where('service_expiry_date', '<', $today)
                 ->with('provider')
                 ->get(),
         ];
@@ -62,16 +72,18 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
             ->modalDescription('Apakah Anda yakin ingin mengirim test notifikasi untuk WiFi yang akan expired dalam 30 hari?')
             ->action(function () {
                 try {
-                    // Create a test command for WiFi expiry check
-                    $expiringWifi = WifiNetwork::whereBetween('service_expiry_date', [now(), now()->addDays(30)])
-                        ->where('status', 'active')
+                    // Create a test command for contract expiry check
+                    $expiringContracts = ProviderContract::whereHas('wifiNetworks', function($query) {
+                            $query->where('status', 'active');
+                        })
+                        ->whereBetween('service_expiry_date', [now(), now()->addDays(30)])
                         ->with('provider')
                         ->get();
-                    
-                    if ($expiringWifi->isEmpty()) {
+
+                    if ($expiringContracts->isEmpty()) {
                         Notification::make()
-                            ->title('Tidak Ada WiFi yang Akan Expired')
-                            ->body('Tidak ada jaringan WiFi yang akan expired dalam 30 hari ke depan.')
+                            ->title('Tidak Ada Kontrak yang Akan Expired')
+                            ->body('Tidak ada kontrak internet yang akan expired dalam 30 hari ke depan.')
                             ->info()
                             ->send();
                         return;
@@ -79,23 +91,24 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
 
                     // Send notification via Fontte
                     $fontte = new FontteService();
-                    $message = "🚨 *PERINGATAN EXPIRY WiFi NETWORKS* 🚨\n\n";
-                    $message .= "Jaringan WiFi yang akan expired dalam 30 hari:\n\n";
-                    
-                    foreach ($expiringWifi as $wifi) {
-                        $daysLeft = now()->diffInDays($wifi->service_expiry_date, false);
+                    $message = "🚨 *PERINGATAN EXPIRY KONTRAK INTERNET* 🚨\n\n";
+                    $message .= "Kontrak internet yang akan expired dalam 30 hari:\n\n";
+
+                    foreach ($expiringContracts as $contract) {
+                        $expiryDate = $contract->service_expiry_date ?? null;
+                        if (!$expiryDate) continue;
+                        
+                        $daysLeft = now()->diffInDays($expiryDate, false);
                         $status = $daysLeft < 0 ? '❌ EXPIRED' : ($daysLeft <= 7 ? '⚠️ KRITIS' : '⏰ PERINGATAN');
-                        $message .= "$status *{$wifi->name}*\n";
-                        $message .= "📍 Lokasi: {$wifi->location}\n";
-                        $message .= "🏢 Provider: " . ($wifi->provider ? $wifi->provider->name : 'Tidak ada') . "\n";
-                        $message .= "📅 Expired: " . $wifi->service_expiry_date->format('d/m/Y') . "\n";
-                        $message .= "💰 Biaya: Rp " . number_format($wifi->monthly_cost ?? 0, 0, ',', '.') . "/bulan\n\n";
+                        $message .= "$status *{$contract->provider->name}* - {$contract->company_name}\n";
+                        $message .= "📅 Expired: " . $expiryDate->format('d/m/Y') . "\n";
+                        $message .= "💰 Biaya: Rp " . number_format($contract->monthly_cost ?? 0, 0, ',', '.') . "/bulan\n\n";
                     }
-                    
+
                     $message .= "Segera lakukan perpanjangan untuk menghindari gangguan layanan!";
-                    
-                    $result = $fontte->sendMessage($message);
-                    
+
+                    $result = $fontte->sendMessage(env('FONTTE_NOTIFICATION_TARGET'), $message);
+
                     if ($result['success']) {
                         Notification::make()
                             ->title('Test Notifikasi WiFi Berhasil')
@@ -113,6 +126,71 @@ class WifiExpiryNotificationWidget extends Widget implements HasForms, HasAction
                     Notification::make()
                         ->title('Error')
                         ->body('Gagal menjalankan test notifikasi WiFi: ' . $e->getMessage())
+                        ->danger()
+                        ->send();
+                }
+            });
+    }
+
+    public function markAsPaidAction(): Action
+    {
+        return Action::make('markAsPaid')
+            ->label('Sudah Bayar')
+            ->icon('heroicon-o-check-circle')
+            ->color('success')
+            ->requiresConfirmation()
+            ->modalHeading('Konfirmasi Pembayaran')
+            ->modalDescription('Apakah Anda yakin ingin menandai kontrak internet ini sebagai sudah dibayar? Tanggal expiry akan diperpanjang ke bulan berikutnya.')
+            ->modalSubmitActionLabel('Ya, Sudah Bayar')
+            ->form([
+                \Filament\Forms\Components\Select::make('contract_id')
+                    ->label('Pilih Kontrak Internet')
+                    ->options(function () {
+                        $today = now();
+                        $in30Days = $today->copy()->addDays(30);
+                        
+                        return ProviderContract::whereHas('wifiNetworks', function($query) {
+                                $query->where('status', 'active');
+                            })
+                            ->where('service_expiry_date', '<=', $in30Days)
+                            ->with('provider')
+                            ->get()
+                            ->mapWithKeys(function ($contract) {
+                                $expiryDate = $contract->service_expiry_date ? $contract->service_expiry_date->format('d M Y') : 'No Date';
+                                return [$contract->id => "{$contract->provider->name} - {$contract->company_name} - Expired: {$expiryDate}"];
+                            });
+                    })
+                    ->required()
+                    ->searchable()
+                    ->placeholder('Pilih kontrak yang sudah dibayar')
+            ])
+            ->action(function (array $data) {
+                try {
+                    $contract = ProviderContract::with('provider')->findOrFail($data['contract_id']);
+                    
+                    // Get current expiry date from contract or today if null
+                    $currentExpiry = $contract->service_expiry_date ? 
+                        Carbon::parse($contract->service_expiry_date) : 
+                        now();
+                    
+                    // Add one month to the current expiry date
+                    $newExpiryDate = $currentExpiry->addMonth();
+                    
+                    // Update the expiry date in contract
+                    $contract->update([
+                        'service_expiry_date' => $newExpiryDate
+                    ]);
+                    
+                    Notification::make()
+                        ->title('Pembayaran Berhasil Dicatat!')
+                        ->body("Kontrak {$contract->provider->name} - {$contract->company_name} telah diperpanjang hingga {$newExpiryDate->format('d M Y')}")
+                        ->success()
+                        ->send();
+                        
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title('Error')
+                        ->body('Gagal memperbarui tanggal expiry: ' . $e->getMessage())
                         ->danger()
                         ->send();
                 }

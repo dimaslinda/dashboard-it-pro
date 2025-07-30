@@ -35,21 +35,15 @@
                         <div
                             class="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-100 dark:border-red-800/50">
                             <div class="space-y-2">
-                                @foreach ($expired->take(3) as $wifi)
+                                @foreach ($expired->take(3) as $contract)
                                     <div class="flex items-start gap-2">
                                         <div class="w-1.5 h-1.5 bg-red-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-medium text-red-700 dark:text-red-200 truncate">
-                                                {{ $wifi->name }}
-                                            </p>
-                                            <p class="text-xs text-red-600 dark:text-red-300 truncate">
-                                                📍 {{ $wifi->location }}
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-red-600 dark:text-red-300">
-                                                🏢 {{ $wifi->provider?->name ?? 'No Provider' }}
-                                            </p>
-                                            <p class="text-xs text-red-600 dark:text-red-300">
-                                                📅 {{ $wifi->service_expiry_date?->format('d/m/Y') }}
+                                                📅 {{ $contract->service_expiry_date?->format('d/m/Y') ?? 'No Date' }}
                                             </p>
                                         </div>
                                     </div>
@@ -97,21 +91,15 @@
                         <div
                             class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 border border-orange-100 dark:border-orange-800/50">
                             <div class="space-y-2">
-                                @foreach ($expiringToday as $wifi)
+                                @foreach ($expiringToday as $contract)
                                     <div class="flex items-start gap-2">
                                         <div class="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-medium text-orange-700 dark:text-orange-200 truncate">
-                                                {{ $wifi->name }}
-                                            </p>
-                                            <p class="text-xs text-orange-600 dark:text-orange-300 truncate">
-                                                📍 {{ $wifi->location }}
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-orange-600 dark:text-orange-300">
-                                                🏢 {{ $wifi->provider?->name ?? 'No Provider' }}
-                                            </p>
-                                            <p class="text-xs text-orange-600 dark:text-orange-300">
-                                                💰 Rp {{ number_format($wifi->monthly_cost ?? 0, 0, ',', '.') }}/bulan
+                                                💰 Rp {{ number_format($contract->monthly_cost ?? 0, 0, ',', '.') }}/bulan
                                             </p>
                                         </div>
                                     </div>
@@ -152,21 +140,15 @@
                         <div
                             class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 border border-yellow-100 dark:border-yellow-800/50">
                             <div class="space-y-2">
-                                @foreach ($expiringIn7Days->take(3) as $wifi)
+                                @foreach ($expiringIn7Days->take(3) as $contract)
                                     <div class="flex items-start gap-2">
                                         <div class="w-1.5 h-1.5 bg-yellow-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-medium text-yellow-700 dark:text-yellow-200 truncate">
-                                                {{ $wifi->name }}
-                                            </p>
-                                            <p class="text-xs text-yellow-600 dark:text-yellow-300 truncate">
-                                                📍 {{ $wifi->location }}
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-yellow-600 dark:text-yellow-300">
-                                                🏢 {{ $wifi->provider?->name ?? 'No Provider' }}
-                                            </p>
-                                            <p class="text-xs text-yellow-600 dark:text-yellow-300">
-                                                📅 {{ $wifi->service_expiry_date?->format('d/m/Y') }}
+                                                📅 {{ $contract->service_expiry_date?->format('d/m/Y') ?? 'No Date' }}
                                             </p>
                                         </div>
                                     </div>
@@ -214,21 +196,15 @@
                         <div
                             class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 border border-blue-100 dark:border-blue-800/50">
                             <div class="space-y-2">
-                                @foreach ($expiringIn30Days->take(3) as $wifi)
+                                @foreach ($expiringIn30Days->take(3) as $contract)
                                     <div class="flex items-start gap-2">
                                         <div class="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0 mt-1.5"></div>
                                         <div class="flex-1 min-w-0">
                                             <p class="text-xs font-medium text-blue-700 dark:text-blue-200 truncate">
-                                                {{ $wifi->name }}
-                                            </p>
-                                            <p class="text-xs text-blue-600 dark:text-blue-300 truncate">
-                                                📍 {{ $wifi->location }}
+                                                🏢 {{ $contract->provider->name ?? 'No Provider' }} - {{ $contract->company_name ?? 'No Company' }}
                                             </p>
                                             <p class="text-xs text-blue-600 dark:text-blue-300">
-                                                🏢 {{ $wifi->provider?->name ?? 'No Provider' }}
-                                            </p>
-                                            <p class="text-xs text-blue-600 dark:text-blue-300">
-                                                📅 {{ $wifi->service_expiry_date?->format('d/m/Y') }}
+                                                📅 {{ $contract->service_expiry_date?->format('d/m/Y') ?? 'No Date' }}
                                             </p>
                                         </div>
                                     </div>
@@ -273,6 +249,10 @@
 
                 <div class="ml-2 test-wifi-notification-wrapper">
                     {{ $this->testWifiNotificationAction }}
+                </div>
+                
+                <div class="ml-2 mark-as-paid-wrapper">
+                    {{ $this->markAsPaidAction }}
                 </div>
             </div>
         </div>
@@ -379,6 +359,33 @@
 
         /* Additional styling for better contrast */
         .test-wifi-notification-wrapper .fi-btn {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Mark as paid button styling */
+        .mark-as-paid-wrapper .fi-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3) !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .mark-as-paid-wrapper .fi-btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 8px 15px -3px rgba(16, 185, 129, 0.4) !important;
+        }
+
+        .mark-as-paid-wrapper .fi-btn .fi-btn-label {
+            color: white !important;
+            font-weight: 600 !important;
+        }
+
+        .mark-as-paid-wrapper .fi-btn .fi-icon {
+            color: white !important;
+        }
+
+        .mark-as-paid-wrapper .fi-btn {
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
         }
     </style>

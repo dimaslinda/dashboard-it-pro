@@ -328,6 +328,14 @@
                 <div class="ml-2 test-notification-wrapper">
                     {{ $this->testNotificationAction }}
                 </div>
+                
+                <div class="ml-2 mark-domain-paid-wrapper">
+                    {{ $this->markDomainAsPaidAction }}
+                </div>
+                
+                <div class="ml-2 mark-hosting-paid-wrapper">
+                    {{ $this->markHostingAsPaidAction }}
+                </div>
             </div>
         </div>
     </x-filament::section>
@@ -446,6 +454,52 @@
         /* Additional styling for better contrast */
         .test-notification-wrapper .fi-btn {
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Mark domain as paid button styling */
+        .mark-domain-paid-wrapper .fi-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3) !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .mark-domain-paid-wrapper .fi-btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 8px 15px -3px rgba(16, 185, 129, 0.4) !important;
+        }
+
+        .mark-domain-paid-wrapper .fi-btn .fi-btn-label {
+            color: white !important;
+            font-weight: 600 !important;
+        }
+
+        .mark-domain-paid-wrapper .fi-btn .fi-icon {
+            color: white !important;
+        }
+
+        /* Mark hosting as paid button styling */
+        .mark-hosting-paid-wrapper .fi-btn {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            border: none !important;
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3) !important;
+            transition: all 0.2s ease-in-out !important;
+        }
+
+        .mark-hosting-paid-wrapper .fi-btn:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 8px 15px -3px rgba(59, 130, 246, 0.4) !important;
+        }
+
+        .mark-hosting-paid-wrapper .fi-btn .fi-btn-label {
+            color: white !important;
+            font-weight: 600 !important;
+        }
+
+        .mark-hosting-paid-wrapper .fi-btn .fi-icon {
+            color: white !important;
         }
     </style>
 </x-filament-widgets::widget>

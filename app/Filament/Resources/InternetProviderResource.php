@@ -19,52 +19,59 @@ class InternetProviderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-signal';
 
-    protected static ?string $navigationGroup = 'Network Management';
+    protected static ?string $navigationGroup = 'Manajemen Jaringan';
 
-    protected static ?string $modelLabel = 'Internet Provider';
+    protected static ?string $modelLabel = 'Penyedia Internet';
 
-    protected static ?string $pluralModelLabel = 'Internet Providers';
+    protected static ?string $pluralModelLabel = 'Penyedia Internet';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Provider Information')
+                Forms\Components\Section::make('Informasi Provider')
                     ->schema([
                         Forms\Components\TextInput::make('name')
+                            ->label('Nama')
                             ->required()
                             ->maxLength(255)
                             ->unique(ignoreRecord: true),
                         
                         Forms\Components\Select::make('status')
+                            ->label('Status')
                             ->options([
-                                'active' => 'Active',
-                                'inactive' => 'Inactive',
+                                'active' => 'Aktif',
+                                'inactive' => 'Tidak Aktif',
                             ])
                             ->default('active')
                             ->required(),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Contact Information')
+                Forms\Components\Section::make('Informasi Kontak')
                     ->schema([
                         Forms\Components\TextInput::make('contact_phone')
+                            ->label('Telepon Kontak')
                             ->tel()
                             ->maxLength(20),
                         
                         Forms\Components\TextInput::make('contact_email')
+                            ->label('Email Kontak')
                             ->email()
                             ->maxLength(255),
                         
                         Forms\Components\TextInput::make('website')
+                            ->label('Website')
                             ->url()
                             ->maxLength(255),
                     ])
                     ->columns(2),
 
-                Forms\Components\Section::make('Additional Information')
+
+                Forms\Components\Section::make('Informasi Tambahan')
                     ->schema([
                         Forms\Components\Textarea::make('notes')
+                            ->label('Catatan')
                             ->maxLength(1000)
                             ->rows(3),
                     ]),
@@ -76,49 +83,67 @@ class InternetProviderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nama')
                     ->searchable()
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('contact_phone')
+                    ->label('Telepon Kontak')
                     ->searchable()
                     ->toggleable(),
                 
                 Tables\Columns\TextColumn::make('contact_email')
+                    ->label('Email Kontak')
                     ->searchable()
                     ->toggleable(),
                 
                 Tables\Columns\TextColumn::make('website')
+                    ->label('Website')
                     ->url(fn ($record) => $record->website)
                     ->openUrlInNewTab()
                     ->toggleable(),
                 
                 Tables\Columns\BadgeColumn::make('status')
+                    ->label('Status')
                     ->colors([
                         'success' => 'active',
                         'warning' => 'inactive',
                     ])
+                    ->formatStateUsing(fn (string $state): string => match($state) {
+                        'active' => 'Aktif',
+                        'inactive' => 'Tidak Aktif',
+                        default => ucfirst($state)
+                    })
+                    ->sortable(),
+                
+                Tables\Columns\TextColumn::make('provider_contracts_count')
+                    ->counts('providerContracts')
+                    ->label('Kontrak')
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('wifi_networks_count')
                     ->counts('wifiNetworks')
-                    ->label('WiFi Networks')
+                    ->label('Jaringan WiFi')
                     ->sortable(),
                 
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')
+                    ->label('Status')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
+                        'active' => 'Aktif',
+                        'inactive' => 'Tidak Aktif',
                     ]),
             ])
             ->actions([
@@ -137,7 +162,7 @@ class InternetProviderResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ProviderContractsRelationManager::class,
         ];
     }
 

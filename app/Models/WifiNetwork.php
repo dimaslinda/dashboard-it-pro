@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Models\ProviderContract;
 
 class WifiNetwork extends Model
 {
@@ -29,6 +30,7 @@ class WifiNetwork extends Model
         'notes',
         'status',
         'provider_id',
+        'contract_id',
         'service_expiry_date',
         'monthly_cost',
         'contract_start_date',
@@ -126,6 +128,14 @@ class WifiNetwork extends Model
     public function provider()
     {
         return $this->belongsTo(InternetProvider::class, 'provider_id');
+    }
+
+    /**
+     * Get the provider contract for this WiFi network
+     */
+    public function contract()
+    {
+        return $this->belongsTo(ProviderContract::class, 'contract_id');
     }
 
     /**

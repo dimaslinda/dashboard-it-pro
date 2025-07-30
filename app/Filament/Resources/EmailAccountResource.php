@@ -24,26 +24,28 @@ class EmailAccountResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
     
-    protected static ?string $navigationGroup = 'IT Management';
+    protected static ?string $navigationGroup = 'Manajemen IT';
     
-    protected static ?string $modelLabel = 'Email Account';
+    protected static ?string $modelLabel = 'Akun Email';
     
-    protected static ?string $pluralModelLabel = 'Email Accounts';
+    protected static ?string $pluralModelLabel = 'Akun Email';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Basic Information')
+                Section::make('Informasi Dasar')
                     ->schema([
                         Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('email')
+                                    ->label('Email')
                                     ->email()
                                     ->required()
                                     ->unique(ignoreRecord: true)
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('password')
+                                    ->label('Password')
                                     ->password()
                                     ->required()
                                     ->revealable()
@@ -52,31 +54,37 @@ class EmailAccountResource extends Resource
                         Grid::make(3)
                             ->schema([
                                 Forms\Components\TextInput::make('provider')
-                                    ->placeholder('Gmail, Outlook, etc.')
+                                    ->label('Provider')
+                                    ->placeholder('Gmail, Outlook, dll.')
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('department')
+                                    ->label('Departemen')
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('assigned_to')
+                                    ->label('Ditugaskan Kepada')
                                     ->maxLength(255),
                             ]),
                         Forms\Components\Select::make('status')
+                            ->label('Status')
                             ->options([
-                                'active' => 'Active',
-                                'inactive' => 'Inactive',
-                                'suspended' => 'Suspended',
+                                'active' => 'Aktif',
+                                'inactive' => 'Tidak Aktif',
+                                'suspended' => 'Ditangguhkan',
                             ])
                             ->default('active')
                             ->required(),
                     ]),
                     
-                Section::make('Server Configuration')
+                Section::make('Konfigurasi Server')
                     ->schema([
                         Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('smtp_server')
+                                    ->label('Server SMTP')
                                     ->placeholder('smtp.gmail.com')
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('smtp_port')
+                                    ->label('Port SMTP')
                                     ->numeric()
                                     ->placeholder('587')
                                     ->minValue(1)
@@ -85,23 +93,26 @@ class EmailAccountResource extends Resource
                         Grid::make(2)
                             ->schema([
                                 Forms\Components\TextInput::make('imap_server')
+                                    ->label('Server IMAP')
                                     ->placeholder('imap.gmail.com')
                                     ->maxLength(255),
                                 Forms\Components\TextInput::make('imap_port')
+                                    ->label('Port IMAP')
                                     ->numeric()
                                     ->placeholder('993')
                                     ->minValue(1)
                                     ->maxValue(65535),
                             ]),
                         Forms\Components\Toggle::make('ssl_enabled')
-                            ->label('SSL/TLS Enabled')
+                            ->label('SSL/TLS Diaktifkan')
                             ->default(true),
                     ])
                     ->collapsible(),
                     
-                Section::make('Additional Notes')
+                Section::make('Catatan Tambahan')
                     ->schema([
                         Forms\Components\Textarea::make('notes')
+                            ->label('Catatan')
                             ->rows(3)
                             ->maxLength(65535),
                     ])
@@ -114,19 +125,23 @@ class EmailAccountResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Email')
                     ->searchable()
                     ->sortable()
                     ->copyable()
                     ->icon('heroicon-m-envelope'),
                 Tables\Columns\TextColumn::make('provider')
+                    ->label('Provider')
                     ->searchable()
                     ->sortable()
                     ->badge()
                     ->color('info'),
                 Tables\Columns\TextColumn::make('department')
+                    ->label('Departemen')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('assigned_to')
+                    ->label('Ditugaskan Kepada')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('ssl_enabled')
@@ -137,36 +152,47 @@ class EmailAccountResource extends Resource
                     ->trueColor('success')
                     ->falseColor('danger'),
                 Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
                         'inactive' => 'warning',
                         'suspended' => 'danger',
                         default => 'secondary',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'active' => 'Aktif',
+                        'inactive' => 'Tidak Aktif',
+                        'suspended' => 'Ditangguhkan',
+                        default => $state,
                     }),
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label('Dibuat')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Diperbarui')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('status')
+                    ->label('Status')
                     ->options([
-                        'active' => 'Active',
-                        'inactive' => 'Inactive',
-                        'suspended' => 'Suspended',
+                        'active' => 'Aktif',
+                        'inactive' => 'Tidak Aktif',
+                        'suspended' => 'Ditangguhkan',
                     ]),
                 SelectFilter::make('provider')
+                    ->label('Provider')
                     ->options(fn (): array => EmailAccount::distinct('provider')
                         ->whereNotNull('provider')
                         ->pluck('provider', 'provider')
                         ->toArray()),
                 Tables\Filters\Filter::make('ssl_enabled')
-                    ->label('SSL Enabled')
+                    ->label('SSL Diaktifkan')
                     ->query(fn (Builder $query): Builder => $query->where('ssl_enabled', true)),
             ])
             ->actions([
