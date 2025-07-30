@@ -16,6 +16,7 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'admin']);
         $manager = Role::firstOrCreate(['name' => 'manager']);
         $user = Role::firstOrCreate(['name' => 'user']);
+        $assetSurvey = Role::firstOrCreate(['name' => 'asset_survey']);
         
         // Get all permissions
         $allPermissions = Permission::all();
@@ -44,6 +45,15 @@ class RolePermissionSeeder extends Seeder
             return str_contains($permission->name, '::view');
         });
         $user->syncPermissions($userPermissions);
+        
+        // Assign asset-related permissions to asset_survey role
+        $assetSurveyPermissions = $allPermissions->filter(function ($permission) {
+            return str_contains($permission->name, 'asset') || 
+                   str_contains($permission->name, 'company') ||
+                   str_contains($permission->name, 'page_') ||
+                   str_contains($permission->name, 'widget_');
+        });
+        $assetSurvey->syncPermissions($assetSurveyPermissions);
         
         // Assign super_admin role to admin@admin.com if exists
         $adminUser = User::where('email', 'admin@admin.com')->first();

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('websites', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('url')->unique();
+            $table->string('url');
             $table->string('domain');
             $table->string('hosting_provider')->nullable();
             $table->string('registrar')->nullable();
@@ -26,13 +26,13 @@ return new class extends Migration
             $table->string('ftp_host')->nullable();
             $table->string('ftp_username')->nullable();
             $table->string('ftp_password')->nullable();
-            $table->integer('ftp_port')->default(21);
+            $table->integer('ftp_port')->nullable();
             $table->string('database_host')->nullable();
             $table->string('database_name')->nullable();
             $table->string('database_username')->nullable();
             $table->string('database_password')->nullable();
             $table->text('notes')->nullable();
-            $table->enum('status', ['active', 'inactive', 'maintenance', 'expired'])->default('active');
+            $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active');
             $table->timestamps();
         });
     }

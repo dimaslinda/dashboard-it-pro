@@ -21,30 +21,26 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class SecretPanelProvider extends PanelProvider
+class AssetSurveyPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('secret')
-            ->path('secret')
+            ->id('asset-survey')
+            ->path('asset-survey')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Blue,
             ])
-            ->brandName('IT Management Dashboard')
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->brandName('Asset Survey Management')
+            ->discoverResources(in: app_path('Filament/AssetSurvey/Resources'), for: 'App\\Filament\\AssetSurvey\\Resources')
+            ->discoverPages(in: app_path('Filament/AssetSurvey/Pages'), for: 'App\\Filament\\AssetSurvey\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/AssetSurvey/Widgets'), for: 'App\\Filament\\AssetSurvey\\Widgets')
             ->widgets([
-                \App\Filament\Widgets\ExpiryNotificationWidget::class,
-                \App\Filament\Widgets\WifiExpiryNotificationWidget::class,
-                // Widgets\AccountWidget::class,
-                // Widgets\FilamentInfoWidget::class,
+                // Asset Survey specific widgets will be added here
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -57,7 +53,7 @@ class SecretPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 TenantMiddleware::class,
-                'panel.access:it-dashboard',
+                'panel.access:asset-survey',
             ])
             ->plugins([
                 FilamentShieldPlugin::make(),
@@ -65,6 +61,9 @@ class SecretPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
                 CheckUserActive::class,
-            ]);
+            ])
+            ->authGuard('web')
+            ->loginRouteSlug('login')
+            ->registration(false); // Disable registration for now
     }
 }

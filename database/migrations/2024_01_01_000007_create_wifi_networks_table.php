@@ -30,6 +30,11 @@ return new class extends Migration
             $table->string('guest_password')->nullable();
             $table->text('notes')->nullable();
             $table->enum('status', ['active', 'inactive', 'maintenance'])->default('active');
+            $table->foreignId('provider_id')->nullable()->constrained('internet_providers')->onDelete('set null');
+            $table->foreignId('contract_id')->nullable()->constrained('provider_contracts')->onDelete('set null');
+            $table->date('service_expiry_date')->nullable();
+            $table->decimal('monthly_cost', 10, 2)->nullable();
+            $table->date('contract_start_date')->nullable();
             $table->timestamps();
         });
     }
