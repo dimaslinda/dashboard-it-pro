@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\InvoiceResource\Pages;
+use App\Filament\Resources\InvoiceResource\Pages\ViewInvoice;
+use App\Filament\Resources\InvoiceResource\Pages\YearlyReport;
 use App\Models\Invoice;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -305,7 +307,32 @@ class InvoiceResource extends Resource
                     ->query(fn (Builder $query): Builder => $query->where('status', '!=', 'paid')->where('due_date', '<', now())),
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->label('Detail')
+                    ->icon('heroicon-o-eye'),
+                
                 Tables\Actions\EditAction::make(),
+                
+                Action::make('download_files')
+                    ->label('Download File')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('info')
+                    ->visible(fn ($record) => $record->media->count() > 0)
+                    ->action(function ($record) {
+                        $files = $record->media;
+                        if ($files->count() === 1) {
+                            return redirect($files->first()->getUrl());
+                        }
+                        
+                        // Jika ada multiple files, buka semua dalam tab baru
+                        $urls = $files->map(fn($file) => $file->getUrl())->toArray();
+                        
+                        Notification::make()
+                            ->title('Multiple Files Available')
+                            ->body('Klik pada file di detail view untuk download individual file.')
+                            ->info()
+                            ->send();
+                    }),
                 
                 Action::make('mark_as_paid')
                     ->label('Mark as Paid')
@@ -369,8 +396,9 @@ class InvoiceResource extends Resource
         return [
             'index' => Pages\ListInvoices::route('/'),
             'create' => Pages\CreateInvoice::route('/create'),
-            'edit' => Pages\EditInvoice::route('/{record}/edit'),
             'yearly-report' => Pages\YearlyReport::route('/yearly-report'),
+            'view' => Pages\ViewInvoice::route('/{record}'),
+            'edit' => Pages\EditInvoice::route('/{record}/edit'),
         ];
     }
 
